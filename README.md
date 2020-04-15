@@ -1,5 +1,3 @@
-
-
 # vktgbot v0.1
 
 ## Overview
@@ -43,6 +41,9 @@ vkDomain = 'aaaaaaaa'
 * `tgBotToken` is the bot token from [BotFather](t.me/BotFather)
 * `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
 * `vkDomain` is the link to vk public `vk.com/>>aaaaaaaa<<`
+#### Open **last_known_id.txt** file and write in it id of the last (not pinned!) post:
+* Example: if link to post is `https://vk.com/wall-22822305_1070803` id of this post will be `1070803`
+* [PhotoExemple](https://i.imgur.com/eWpso0C.png)
 ### Launch the bot
 #### Windows
 ```
