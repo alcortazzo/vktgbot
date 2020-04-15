@@ -1,6 +1,6 @@
 
 
-# vktgbot
+# vktgbot v0.1
 
 ## Overview
 Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
