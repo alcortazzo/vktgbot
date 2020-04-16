@@ -1,14 +1,17 @@
-# vktgbot v0.1
+
+# vktgbot v0.2
 
 ## Overview
 Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
 
 ## What is now implemented
-|Type|Is implemented?|When was added|
+|Type of post|Is implemented?|When was added|
 |:---:|:---:|:---:|
-|Text from posts|Yes|14-Apr-2020|
-|Images from posts|Only image's urls for now|~|
-|Links to YouTube vids|Not yet|~
+|Just text|Yes|v0.1|
+|Text with photos|Text + image's urls. For now|v0.2|
+|Text with YT vids|Text + preview's urls > **VK-API restrictions**|v0.2
+|Text with links|Yes|v0.2
+|Text with audios|Text **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**|v0.2
 |Polls|Not yet|~
 
 ## How bot works [for now]
@@ -48,6 +51,10 @@ vkDomain = 'aaaaaaaa'
 #### Windows
 ```
 python vktgbot.py
+```
+or
+```
+python vktgbot.py > log.txt
 ```
 #### Linux
 ```

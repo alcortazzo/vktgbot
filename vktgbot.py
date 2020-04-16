@@ -3,6 +3,7 @@
 
 '''
 Made by @alcortazzo
+v0.2
 '''
 
 import config
@@ -35,67 +36,76 @@ def getData():
 
 def sendPosts(items, last_id):
     isTypePost = 'post'
-    posts = items
+    # posts = items
     for item in items:
         if item['id'] <= last_id:
             break
+        post = item
         # item = getData()
-        for post in posts:
-            try:
-                if post['attachments'][0]['type'] == 'photo':
-                    isTypePost = 'photo'
-                    photos = post['attachments']
-                    urlsPhoto = []
-                    for photo in photos:
-                        urls = photo['photo']['sizes']
-                        for url in urls:
-                            if url['type'] == 'w':
-                                urlsPhoto.append(url['url'])
-                                #wwwwwwwwwwww
-                                break
-                            elif url['type'] == 'z':
-                                urlsPhoto.append(url['url'])
-                                #zzzzzzzzzzzz
-                                break
-                            #elif url['type'] == 'y':
-                            #    urlsPhoto.append(url['url'])
-                            #    #yyyyyyyyyyyy
-                            #    break
-                    print(urlsPhoto)
-            except Exception as ex:
-                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                      '| [Bot] [Info] Excepion in type {!s} in sendPosts(): {!s}'.format( ########################################
-                          type(ex).__name__, str(ex)))
-            #try:
-            #    if post['attachments'][0]['type'] == 'video':
-            #        isTypePost = 'video'
-            #        videoUrlPreview = post['attachments'][0]['video']['image'][-1]['url']
-            #        print(videoUrlPreview)
-            #except Exception as ex:
-            #    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-            #          '| [Bot] [Info] [No Video in post] Excepion in type {!s} in sendPosts(): {!s}'.format(
-            #              type(ex).__name__, str(ex)))
+        # for post in posts:
+        try:
+            if post['attachments'][0]['type'] == 'photo':
+                isTypePost = 'photo'
+                photos = post['attachments']
+                urlsPhoto = []
+                for photo in photos:
+                    urls = photo['photo']['sizes']
+                    for url in urls:
+                        if url['type'] == 'w':
+                            urlsPhoto.append(url['url'])
+                            break
+                        elif url['type'] == 'z':
+                            urlsPhoto.append(url['url'])
+                            break
+        except Exception as ex:
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                  '| [Bot] [Info] Photos from the post has been added to the message',
+                  'or the post did not have photos {!s} in sendPosts(): {!s}'.format(
+                      type(ex).__name__, str(ex)))
 
+        try:
+            if post['attachments'][0]['type'] == 'video':
+                isTypePost = 'video'
+                videoUrlPreview = post['attachments'][0]['video']['image'][-1]['url']
+                print(videoUrlPreview)
+        except Exception as ex:
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                  '| [Bot] [Info] The post did not have videos {!s} in sendPosts(): {!s}'.format(
+                      type(ex).__name__, str(ex)))
 
-        # gPostType = '{!s}{!s}'.format(img)
-    if isTypePost == 'post':
-        tgPost = '{!s}{!s}'.format(item['text'], '\n\n@thedrzj_tg')
-        bot.send_message(config.tgChannel, tgPost)
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Post sent')
+        try:
+            if post['attachments'][0]['type'] == 'link':
+                isTypePost = 'link'
+                linkurl = post['attachments'][0]['link']['url']
+                print(linkurl)
+        except Exception as ex:
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                  '| [Bot] [Info] The post did not have links {!s} in sendPosts(): {!s}'.format(
+                      type(ex).__name__, str(ex)))
 
-    elif isTypePost == 'photo':
-        tgPost = '{!s}{!s}'.format(item['text'], '\n\n@thedrzj_tg')
-        bot.send_message(config.tgChannel, tgPost)
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Post sent')
+        if isTypePost == 'post':
+            tgPost = '{!s}{!s}'.format(item['text'])
+            bot.send_message(config.tgChannel, tgPost)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post without photo/video sent')
 
-        bot.send_message(config.tgChannel, str(urlsPhoto))
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Photo(s) sent')
-        time.sleep(1)
-    elif isTypePost == 'video':
-        bot.send_message(config.tgChannel, '')
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Video sent')
-        time.sleep(1)
-    return
+        elif isTypePost == 'photo':
+            x = ''
+            for urlPhoto in urlsPhoto:
+                x += urlPhoto + '\n'
+            print(x)
+            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + x)
+            bot.send_message(config.tgChannel, tgPost)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with photos sent')
+
+        elif isTypePost == 'video':
+            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + videoUrlPreview)
+            bot.send_message(config.tgChannel, tgPost)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with video sent')
+
+        elif isTypePost == 'link':
+            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + linkurl)
+            bot.send_message(config.tgChannel, tgPost)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with links sent')
 
 
 def checkNewPost():
