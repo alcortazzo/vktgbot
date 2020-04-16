@@ -41,8 +41,6 @@ def sendPosts(items, last_id):
         if item['id'] <= last_id:
             break
         post = item
-        # item = getData()
-        # for post in posts:
         try:
             if post['attachments'][0]['type'] == 'photo':
                 isTypePost = 'photo'
