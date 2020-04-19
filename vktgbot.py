@@ -8,16 +8,18 @@ v0.2
 
 import config
 import requests
-import telebot
 import eventlet
 import time
+import urllib
+from telebot import TeleBot, types
 from datetime import datetime
 
-bot = telebot.TeleBot(config.tgBotToken)
+bot = TeleBot(config.tgBotToken)
 
 
 def getData():
     timeout = eventlet.Timeout(20)
+    # trying to request data from vk_api
     try:
         data = requests.get('https://api.vk.com/method/wall.get',
                             params={'access_token': config.vkToken,
@@ -36,11 +38,12 @@ def getData():
 
 def sendPosts(items, last_id):
     isTypePost = 'post'
-    # posts = items
     for item in items:
+        # compares id of the last post and id from the file last_known_id.txt
         if item['id'] <= last_id:
             break
         post = item
+        # trying to check vk post type
         try:
             if post['attachments'][0]['type'] == 'photo':
                 isTypePost = 'photo'
@@ -80,25 +83,32 @@ def sendPosts(items, last_id):
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] [Info] The post did not have links {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
-
+        # send message according to post type
         if isTypePost == 'post':
             tgPost = '{!s}{!s}'.format(item['text'])
             bot.send_message(config.tgChannel, tgPost)
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post without photo/video sent')
 
         elif isTypePost == 'photo':
-            x = ''
+            listOfPhotos = []
+            # get photos from urls
             for urlPhoto in urlsPhoto:
-                x += urlPhoto + '\n'
-            print(x)
-            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + x)
+                listOfPhotos.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
+            # send messages with photos
+            tgPost = '{!s}{!s}'.format(item['text'])
             bot.send_message(config.tgChannel, tgPost)
+            bot.send_media_group(config.tgChannel, listOfPhotos)
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with photos sent')
 
         elif isTypePost == 'video':
-            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + videoUrlPreview)
+            # get preview from youtube video
+            listOfPreviews = []
+            listOfPreviews.append(types.InputMediaPhoto(urllib.request.urlopen(videoUrlPreview).read()))
+            tgPost = '{!s}{!s}'.format(item['text'])
+            # send messages with video preview
             bot.send_message(config.tgChannel, tgPost)
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with video sent')
+            bot.send_media_group(config.tgChannel, listOfPreviews)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with video preview sent')
 
         elif isTypePost == 'link':
             tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + linkurl)
@@ -117,15 +127,19 @@ def checkNewPost():
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Info] Last id of vk post is {!s}'.format(last_id))
     try:
         feed = getData()
+        # continue if we received data
         if feed is not None:
             entries = feed
             try:
+                # if the post is pinned, skip it
                 pinned = entries[0]['is_pinned']
+                # and call sendPosts
                 config.isPinned = True
                 sendPosts(entries[1:], last_id)
             except KeyError:
                 config.isPinned = False
                 sendPosts(entries, last_id)
+            # write new last_id to file
             with open('last_known_id.txt', 'w') as file:
                 try:
                     pinned = entries[0]['is_pinned']
@@ -150,6 +164,7 @@ if __name__ == '__main__':
             checkNewPost()
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Script went to sleep for', config.timeSleep,
                   'seconds\n\n')
+            # pause for n minutes (timeSleep in config.py)
             time.sleep(int(config.timeSleep))
     elif config.singleStart:
         checkNewPost()
