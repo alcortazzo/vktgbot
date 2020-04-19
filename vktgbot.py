@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.3
+v0.4
 '''
 
 import config
@@ -37,17 +37,17 @@ def getData():
 
 
 def sendPosts(items, last_id):
-    isTypePost = 'post'
     for item in items:
+        isTypePost = 'post'
         # compares id of the last post and id from the file last_known_id.txt
         if item['id'] <= last_id:
             break
-        post = item
+        #post = item
         # trying to check vk post type
         try:
-            if post['attachments'][0]['type'] == 'photo':
+            if item['attachments'][0]['type'] == 'photo':
                 isTypePost = 'photo'
-                photos = post['attachments']
+                photos = item['attachments']
                 urlsPhoto = []
                 for photo in photos:
                     urls = photo['photo']['sizes']
@@ -65,9 +65,9 @@ def sendPosts(items, last_id):
                       type(ex).__name__, str(ex)))
 
         try:
-            if post['attachments'][0]['type'] == 'video':
+            if item['attachments'][0]['type'] == 'video':
                 isTypePost = 'video'
-                videoUrlPreview = post['attachments'][0]['video']['image'][-1]['url']
+                videoUrlPreview = item['attachments'][0]['video']['image'][-1]['url']
                 print(videoUrlPreview)
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
@@ -75,18 +75,18 @@ def sendPosts(items, last_id):
                       type(ex).__name__, str(ex)))
 
         try:
-            if post['attachments'][0]['type'] == 'link':
+            if item['attachments'][0]['type'] == 'link':
                 isTypePost = 'link'
-                linkurl = post['attachments'][0]['link']['url']
+                linkurl = item['attachments'][0]['link']['url']
                 print(linkurl)
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] [Info] The post did not have links {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
+
         # send message according to post type
         if isTypePost == 'post':
-            tgPost = '{!s}{!s}'.format(item['text'])
-            bot.send_message(config.tgChannel, tgPost)
+            bot.send_message(config.tgChannel, item['text'])
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post without photo/video sent')
 
         elif isTypePost == 'photo':
@@ -95,8 +95,7 @@ def sendPosts(items, last_id):
             for urlPhoto in urlsPhoto:
                 listOfPhotos.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
             # send messages with photos
-            tgPost = '{!s}{!s}'.format(item['text'])
-            bot.send_message(config.tgChannel, tgPost)
+            bot.send_message(config.tgChannel, item['text'])
             bot.send_media_group(config.tgChannel, listOfPhotos)
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with photos sent')
 
@@ -104,9 +103,8 @@ def sendPosts(items, last_id):
             # get preview from youtube video
             listOfPreviews = []
             listOfPreviews.append(types.InputMediaPhoto(urllib.request.urlopen(videoUrlPreview).read()))
-            tgPost = '{!s}{!s}'.format(item['text'])
             # send messages with video preview
-            bot.send_message(config.tgChannel, tgPost)
+            bot.send_message(config.tgChannel, item['text'])
             bot.send_media_group(config.tgChannel, listOfPreviews)
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with video preview sent')
 
