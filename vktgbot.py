@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.2
+v0.3
 '''
 
 import config
