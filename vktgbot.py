@@ -3,16 +3,16 @@
 
 '''
 Made by @alcortazzo
-v0.4
+v0.5
 '''
 
+import time
+import urllib
 import config
 import requests
 import eventlet
-import time
-import urllib
-from telebot import TeleBot, types
 from datetime import datetime
+from telebot import TeleBot, types
 
 bot = TeleBot(config.tgBotToken)
 
@@ -49,15 +49,21 @@ def sendPosts(items, last_id):
                 isTypePost = 'photo'
                 photos = item['attachments']
                 urlsPhoto = []
+                # check the size of the photo and add this photo to the URL list
+                # (from large to smaller)
+                # photo with type W > Z > Y
                 for photo in photos:
                     urls = photo['photo']['sizes']
-                    for url in urls:
-                        if url['type'] == 'w':
-                            urlsPhoto.append(url['url'])
-                            break
-                        elif url['type'] == 'z':
-                            urlsPhoto.append(url['url'])
-                            break
+                    if urls[-1]['type'] == 'y':
+                        urlsPhoto.append(urls[-1]['url'])
+                    elif urls[-1]['type'] != 'y':
+                        for url in urls:
+                            if url['type'] == 'w':
+                                urlsPhoto.append(url['url'])
+                                break
+                            elif url['type'] == 'z':
+                                urlsPhoto.append(url['url'])
+                                break
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] [Info] Photos from the post has been added to the message',

@@ -1,4 +1,4 @@
-# <p align="center">vktgbot v0.4
+# <p align="center">vktgbot v0.5
 
 <p align="center">Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
 
