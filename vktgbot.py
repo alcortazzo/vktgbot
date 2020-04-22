@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.5
+v0.6
 '''
 
 import time
@@ -42,7 +42,6 @@ def sendPosts(items, last_id):
         # compares id of the last post and id from the file last_known_id.txt
         if item['id'] <= last_id:
             break
-        #post = item
         # trying to check vk post type
         try:
             if item['attachments'][0]['type'] == 'photo':
@@ -51,12 +50,10 @@ def sendPosts(items, last_id):
                 urlsPhoto = []
                 # check the size of the photo and add this photo to the URL list
                 # (from large to smaller)
-                # photo with type W > Z > Y
+                # photo with type W > Z > *
                 for photo in photos:
                     urls = photo['photo']['sizes']
-                    if urls[-1]['type'] == 'y':
-                        urlsPhoto.append(urls[-1]['url'])
-                    elif urls[-1]['type'] != 'y':
+                    if urls[-1]['type'] == 'z':
                         for url in urls:
                             if url['type'] == 'w':
                                 urlsPhoto.append(url['url'])
@@ -64,10 +61,13 @@ def sendPosts(items, last_id):
                             elif url['type'] == 'z':
                                 urlsPhoto.append(url['url'])
                                 break
+                    # if we did not find 'w' or 'z', we take the largest available
+                    elif urls[-1]['type'] != 'z':
+                        urlsPhoto.append(urls[-1]['url'])
+
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] Photos from the post has been added to the message',
-                  'or the post did not have photos {!s} in sendPosts(): {!s}'.format(
+                  '| [Bot] [Info] No photos in the post. {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
 
         try:
@@ -77,7 +77,7 @@ def sendPosts(items, last_id):
                 print(videoUrlPreview)
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] The post did not have videos {!s} in sendPosts(): {!s}'.format(
+                  '| [Bot] [Info] No videos in the post. {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
 
         try:
@@ -87,13 +87,13 @@ def sendPosts(items, last_id):
                 print(linkurl)
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] The post did not have links {!s} in sendPosts(): {!s}'.format(
+                  '| [Bot] [Info] No links in the post.  {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
 
         # send message according to post type
         if isTypePost == 'post':
             bot.send_message(config.tgChannel, item['text'])
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post without photo/video sent')
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post sent')
 
         elif isTypePost == 'photo':
             listOfPhotos = []
@@ -101,23 +101,31 @@ def sendPosts(items, last_id):
             for urlPhoto in urlsPhoto:
                 listOfPhotos.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
             # send messages with photos
-            bot.send_message(config.tgChannel, item['text'])
+            if item['text'] != '':
+                bot.send_message(config.tgChannel, item['text'])
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post sent')
             bot.send_media_group(config.tgChannel, listOfPhotos)
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with photos sent')
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Post with photo sent')
 
         elif isTypePost == 'video':
             # get preview from youtube video
             listOfPreviews = []
             listOfPreviews.append(types.InputMediaPhoto(urllib.request.urlopen(videoUrlPreview).read()))
             # send messages with video preview
-            bot.send_message(config.tgChannel, item['text'])
+            if item['text'] != '':
+                bot.send_message(config.tgChannel, item['text'])
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post sent')
             bot.send_media_group(config.tgChannel, listOfPreviews)
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with video preview sent')
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Post with video preview sent')
 
         elif isTypePost == 'link':
-            tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + linkurl)
-            bot.send_message(config.tgChannel, tgPost)
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with links sent')
+            if item['text'] == '':
+                bot.send_message(config.tgChannel, linkurl)
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Post with links')
+            else:
+                tgPost = '{!s}{!s}'.format(item['text'], '\n\n' + linkurl)
+                bot.send_message(config.tgChannel, tgPost)
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post with links sent')
 
 
 def checkNewPost():

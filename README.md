@@ -1,29 +1,31 @@
-# <p align="center">vktgbot v0.5
+# <p align="center">vktgbot v0.6
 
 <p align="center">Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
 
+* [**Latest release**](https://github.com/alcortazzo/vktgbot/releases)
 * [What is now implemented](#what-is-now-implemented)
 * [How bot works](#how-bot-works)
 * [Installation & Usage](#installation--usage)
 
 ## What is now implemented
-|Type of post|Is implemented?|When was added|
-|:---:|:---:|:---:|
-|Just text|Yes|v0.1|
-|Text with photos|Yes|v0.2 - v0.3|
-|Text with links|Yes|v0.2
-|Text with YT vids|Text + preview's urls > **VK-API restrictions**|v0.2
-|Text with audios|Text **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**|v0.2
-|Polls|Not yet|~
+|Type of VK post|Is implemented?|What bot will send to Telegram
+|:---:|:---:|:---:|:---:|
+|Text post|**Yes**|Text post
+|Text post with photos|**Yes**|Text post & post with photos
+|Text post with links|**Yes** |Text post with links
+|Text post with YT vids|**50/50**|Text post & preview's urls > **VK-API restrictions**
+|Text post with audios|*50/50*|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Text post with polls|Not yet|Just text post for now
+|VK reposts| Not yet|~
 
 ## How bot works
 * Bot sends and receives request from vk api [get.wall method]
 * Then bot compares the id from *last_known_id.txt* with the id of the last post
-* If id of the last post is less than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
+* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
  * sendPosts() checks post type and
    * if the post type is just text, it sends one text message to telegram
    * if the post type is text + photo, it sends two messages to telegram: text message + message with images
-   * if the post type is text + yt video, it sends two messages to telegram: text message + video preview (because vk_api does not support video links) 
+   * if the post type is text + yt video, it sends two messages to telegram: text message + video preview (because vk_api does not support youtube video links) 
    * if the post type is text + audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
 * Then bot waits for the period set by the user and starts again
 
