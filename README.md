@@ -9,7 +9,7 @@
 
 ## What is now implemented
 |Type of VK post|Is implemented?|What bot will send to Telegram
-|:---:|:---:|:---:|:---:|
+|:---:|:---:|:---:|
 |Text post|**Yes**|Text post
 |Text post with photos|**Yes**|Text post & post with photos
 |Text post with links|**Yes** |Text post with links
