@@ -1,4 +1,4 @@
-# <p align="center">vktgbot v0.6
+# <p align="center">vktgbot v0.7
 
 <p align="center">Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
 
@@ -14,13 +14,20 @@
 |Text post with photos|**Yes**|Text post & post with photos
 |Text post with links|**Yes** |Text post with links
 |Text post with YT vids|**50/50**|Text post & preview's urls > **VK-API restrictions**
-|Text post with audios|*50/50*|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Reposts|Yes|Text of original post + repost text
 |Text post with polls|Not yet|Just text post for now
 |VK reposts| Not yet|~
+
+### In addition, bot can skip ads posts if  in `config.py`
+```python
+skipAdsPosts = True
+```
 
 ## How bot works
 * Bot sends and receives request from vk api [get.wall method]
 * Then bot compares the id from *last_known_id.txt* with the id of the last post
+* If `skipAdsPosts = True` in `config.py` bot will skip ads posts
 * If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
  * sendPosts() checks post type and
    * if the post type is just text, it sends one text message to telegram

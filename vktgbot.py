@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.6
+v0.7
 '''
 
 import time
@@ -39,9 +39,13 @@ def getData():
 def sendPosts(items, last_id):
     for item in items:
         isTypePost = 'post'
+        isRepost = False
         # compares id of the last post and id from the file last_known_id.txt
         if item['id'] <= last_id:
             break
+        if config.skipAdsPosts:
+            if item['marked_as_ads'] == 1:
+                continue
         # trying to check vk post type
         try:
             if item['attachments'][0]['type'] == 'photo':
@@ -90,9 +94,23 @@ def sendPosts(items, last_id):
                   '| [Bot] [Info] No links in the post.  {!s} in sendPosts(): {!s}'.format(
                       type(ex).__name__, str(ex)))
 
+        # REPOST
+        try:
+            if 'copy_history' in item:
+                isRepost = True
+                if item['copy_history'][0]['text'] != '':
+                    textRepost = item['copy_history'][0]['text']
+        except Exception as ex:
+            print(ex)
+
+
         # send message according to post type
         if isTypePost == 'post':
-            bot.send_message(config.tgChannel, item['text'])
+            if isRepost:
+                bot.send_message('@testing_rss', item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                 parse_mode='Markdown')
+            elif not isRepost:
+                bot.send_message(config.tgChannel, item['text'])
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Text post sent')
 
         elif isTypePost == 'photo':

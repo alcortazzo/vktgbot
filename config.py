@@ -16,4 +16,4 @@ reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; other
 singleStart = False
 timeSleep = 60 * 3  # time in seconds
 isPinned = False
-
+skipAdsPosts = True
