@@ -15,9 +15,8 @@
 |Text post with links|**Yes** |Text post with links
 |Text post with YT vids|**50/50**|Text post & preview's urls > **VK-API restrictions**
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
-|Reposts|Yes|Text of original post + repost text
+|VK reposts|Yes|Text of original post + repost text
 |Text post with polls|Not yet|Just text post for now
-|VK reposts| Not yet|~
 
 ### In addition, bot can skip ads posts if  in `config.py`
 ```python
