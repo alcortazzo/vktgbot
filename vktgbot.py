@@ -107,7 +107,7 @@ def sendPosts(items, last_id):
         # send message according to post type
         if isTypePost == 'post':
             if isRepost:
-                bot.send_message('@testing_rss', item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
                                  parse_mode='Markdown')
             elif not isRepost:
                 bot.send_message(config.tgChannel, item['text'])
