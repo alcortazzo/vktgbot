@@ -62,13 +62,9 @@ vkDomain = 'aaaaaaaa'
 ### Launch the bot
 #### Windows
 ```
-python vktgbot.py
-```
-or
-```
-python vktgbot.py > log.txt
+python bot.py
 ```
 #### Linux
 ```
-python3 vktgbot.py
+python3 bot.py
 ```
