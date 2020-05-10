@@ -1,11 +1,17 @@
-# <p align="center">vktgbot v0.8
-
+<h1 id="-p-align-center-vktgbot-v0-8"><p align="center">vktgbot</h1>
+<p align=center>
+    <a target="_blank" href="https://www.python.org/downloads/" title="Python Version"><img src="https://img.shields.io/badge/python-%3E=_3.5-blue.svg"></a>
+    <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
+    <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
+</p>    
 <p align="center">Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
-
-* [**Latest release**](https://github.com/alcortazzo/vktgbot/releases)
-* [What is now implemented](#what-is-now-implemented)
-* [How bot works](#how-bot-works)
-* [Installation & Usage](#installation--usage)
+<p align="center">
+    <a href="#what-is-now-implemented">What is now implemented</a>
+    &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#how-bot-works">How bot works</a>
+    &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+    <a href="#installation--usage">Installation & Usage</a>
+</p>
 
 ## What is now implemented
 |Type of VK post|Is implemented?|What bot will send to Telegram
