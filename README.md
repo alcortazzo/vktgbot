@@ -12,6 +12,11 @@
     &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
     <a href="#installation--usage">Installation & Usage</a>
 </p>
+<p align="center">
+<a href="https://youtu.be/DyLmaJg0v-w?t=3">
+<img src="https://i.imgur.com/3alj3Dr.png"/>
+</a>
+</p>
 
 ## What is now implemented
 |Type of VK post|Is implemented?|What bot will send to Telegram
