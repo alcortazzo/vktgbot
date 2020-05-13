@@ -17,6 +17,17 @@ from telebot import TeleBot, types
 
 bot = TeleBot(config.tgBotToken)
 
+print('\n\n            /$$         /$$               /$$                   /$$    \n',
+      '           | $$        | $$              | $$                  | $$    \n',
+      ' /$$    /$$| $$   /$$ /$$$$$$    /$$$$$$ | $$$$$$$   /$$$$$$  /$$$$$$  \n',
+      '|  $$  /$$/| $$  /$$/|_  $$_/   /$$__  $$| $$__  $$ /$$__  $$|_  $$_/  \n',
+      ' \  $$/$$/ | $$$$$$/   | $$    | $$  \ $$| $$  \ $$| $$  \ $$  | $$    \n',
+      '  \  $$$/  | $$_  $$   | $$ /$$| $$  | $$| $$  | $$| $$  | $$  | $$ /$$\n',
+      '   \  $/   | $$ \  $$  |  $$$$/|  $$$$$$$| $$$$$$$/|  $$$$$$/  |  $$$$/\n',
+      '    \_/    |__/  \__/   \___/   \____  $$|_______/  \______/    \___/  \n',
+      '                                /$$  \ $$                              \n',
+      '                               |  $$$$$$/                              \n',
+      '                                \______/                               \n\n')
 
 def getData():
     timeout = eventlet.Timeout(20)
@@ -201,13 +212,13 @@ def checkNewPost():
                     pinned = entries[0]['is_pinned']
                     file.write(str(entries[1]['id']))
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Info] New Last id (VK) is {!s}'.format((entries[1]['id'])))
-                    logging.info('[Info] New last_id (VK) is {!s}'.format((entries[1]['id'])))
+                          '| [Info] New last id of vk post is {!s}'.format((entries[1]['id'])))
+                    logging.info('[Info] New last id of vk post is {!s}'.format((entries[1]['id'])))
                 except KeyError:
                     file.write(str(entries[0]['id']))
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Info] New Last id (VK) is {!s}'.format((entries[0]['id'])))
-                    logging.info('[Info] New last_id (VK) is {!s}'.format((entries[0]['id'])))
+                          '| [Info] New last id of vk post is {!s}'.format((entries[0]['id'])))
+                    logging.info('[Info] New last id of vk post is {!s}'.format((entries[0]['id'])))
     except Exception as ex:
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
               '| Excepion in type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
