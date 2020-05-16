@@ -1,6 +1,6 @@
 <h1 id="-p-align-center-vktgbot-v0-8"><p align="center">vktgbot</h1>
 <p align=center>
-    <a target="_blank" href="https://www.python.org/downloads/" title="Python Version"><img src="https://img.shields.io/badge/python-%3E=_3.5-blue.svg"></a>
+    <a target="_blank" href="https://www.python.org/downloads/" title="Python Version"><img src="https://img.shields.io/badge/python-%3E=_3.5-purple.svg"></a>
     <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
     <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
 </p>    
@@ -26,7 +26,7 @@
 |Text post with links|**Yes** |Text post with links
 |Text post with YT vids|**50/50**|Text post & preview's urls > **VK-API restrictions**
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
-|VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png)
+|VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
 |Text post with polls|Not yet|Just text post for now
 
 ### In addition, bot can skip ads posts if  in `config.py`
