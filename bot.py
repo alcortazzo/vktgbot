@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.9.1
+v0.9.2
 '''
 
 import time
@@ -158,10 +158,10 @@ def sendPosts(items, last_id):
                     if howLong <= 1024:
                         bot.send_photo(config.tgChannel, Photo, item['text'])
                     elif howLong > 1024:
-                        bot.send_message(config.tgChannel, item['text'] + '[ ](' + Photo + ')', parse_mode='Markdown')
+                        bot.send_message(config.tgChannel, '[ ](' + Photo + ')' + item['text'], parse_mode='Markdown')
                 elif isRepost:
                     bot.send_message(config.tgChannel,
-                                     item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_\n[ ](' + Photo + ')',
+                                     '[ ](' + Photo + ')' + item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
                                      parse_mode='Markdown')
                 print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                       '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
@@ -174,11 +174,11 @@ def sendPosts(items, last_id):
                 if howLong <= 1024:
                     bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
                 elif howLong > 1024:
-                    bot.send_message(config.tgChannel, item['text'] + '[ ](' + videoUrlPreview + ')',
+                    bot.send_message(config.tgChannel, '[ ](' + videoUrlPreview + ')' + item['text'],
                                      parse_mode='Markdown')
             elif isRepost:
                 bot.send_message(config.tgChannel,
-                                 item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_\n[ ](' + videoUrlPreview + ')',
+                                 '[ ](' + videoUrlPreview + ')' + item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
                                  parse_mode='Markdown')
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
