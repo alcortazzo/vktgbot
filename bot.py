@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.9
+v0.9.1
 '''
 
 import time
@@ -153,26 +153,33 @@ def sendPosts(items, last_id):
                 logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
             elif len(urlsPhoto) == 1:
                 Photo = urlsPhoto[0]
+                howLong = len(item['text'])
                 if not isRepost:
-                    bot.send_photo(config.tgChannel, Photo, item['text'])
+                    if howLong <= 1024:
+                        bot.send_photo(config.tgChannel, Photo, item['text'])
+                    elif howLong > 1024:
+                        bot.send_message(config.tgChannel, item['text'] + '[ ](' + Photo + ')', parse_mode='Markdown')
                 elif isRepost:
-                    bot.send_photo(config.tgChannel, Photo,
-                                   item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
-                                   parse_mode='Markdown')
+                    bot.send_message(config.tgChannel,
+                                     item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_\n[ ](' + Photo + ')',
+                                     parse_mode='Markdown')
                 print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                       '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
                 logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
 
         elif isTypePost == 'video':
+            howLong = len(item['text'])
             # send messages with video preview
-            if 1 == 1:
-                #Photo = listOfPreviews[0]
-                if not isRepost:
+            if not isRepost:
+                if howLong <= 1024:
                     bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
-                elif isRepost:
-                    bot.send_photo(config.tgChannel, videoUrlPreview,
-                                   item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
-                                   parse_mode='Markdown')
+                elif howLong > 1024:
+                    bot.send_message(config.tgChannel, item['text'] + '[ ](' + videoUrlPreview + ')',
+                                     parse_mode='Markdown')
+            elif isRepost:
+                bot.send_message(config.tgChannel,
+                                 item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_\n[ ](' + videoUrlPreview + ')',
+                                 parse_mode='Markdown')
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
             logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))

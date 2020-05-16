@@ -14,6 +14,6 @@ reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; other
                      # suggests — suggested posts on a community wall
 
 singleStart = False
-timeSleep = 60 * 3  # time in seconds
+timeSleep = 60 * 2  # time in seconds
 isPinned = False
 skipAdsPosts = True
