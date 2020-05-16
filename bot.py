@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v0.8
+v0.9
 '''
 
 import time
@@ -28,6 +28,7 @@ print('\n\n            /$$         /$$               /$$                   /$$  
       '                                /$$  \ $$                              \n',
       '                               |  $$$$$$/                              \n',
       '                                \______/                               \n\n')
+
 
 def getData():
     timeout = eventlet.Timeout(20)
@@ -131,39 +132,47 @@ def sendPosts(items, last_id):
 
         elif isTypePost == 'photo':
             listOfPhotos = []
-            # get photos from urls
-            for urlPhoto in urlsPhoto:
-                listOfPhotos.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
             # send messages with photos
-            if not isRepost:
-                if item['text'] != '':
-                    bot.send_message(config.tgChannel, item['text'])
-            elif isRepost:
-                bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
-                                 parse_mode='Markdown')
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
-            bot.send_media_group(config.tgChannel, listOfPhotos)
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+            if len(urlsPhoto) >= 2:
+                # get photos from urls
+                for urlPhoto in urlsPhoto:
+                    listOfPhotos.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
+
+                if not isRepost:
+                    if item['text'] != '':
+                        bot.send_message(config.tgChannel, item['text'])
+                elif isRepost:
+                    bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                     parse_mode='Markdown')
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                      '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                bot.send_media_group(config.tgChannel, listOfPhotos)
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                      '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+                logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+            elif len(urlsPhoto) == 1:
+                Photo = urlsPhoto[0]
+                if not isRepost:
+                    bot.send_photo(config.tgChannel, Photo, item['text'])
+                elif isRepost:
+                    bot.send_photo(config.tgChannel, Photo,
+                                   item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                   parse_mode='Markdown')
+                print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                      '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+                logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
 
         elif isTypePost == 'video':
-            # get preview from youtube video
-            listOfPreviews = []
-            listOfPreviews.append(types.InputMediaPhoto(urllib.request.urlopen(videoUrlPreview).read()))
             # send messages with video preview
-            if not isRepost:
-                if item['text'] != '':
-                    bot.send_message(config.tgChannel, item['text'])
-            elif isRepost:
-                bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
-                                 parse_mode='Markdown')
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
-            bot.send_media_group(config.tgChannel, listOfPreviews)
+            if 1 == 1:
+                #Photo = listOfPreviews[0]
+                if not isRepost:
+                    bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
+                elif isRepost:
+                    bot.send_photo(config.tgChannel, videoUrlPreview,
+                                   item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                   parse_mode='Markdown')
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
             logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
