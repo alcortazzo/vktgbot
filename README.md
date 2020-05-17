@@ -14,7 +14,7 @@
 </p>
 <p align="center">
 <a href="https://youtu.be/DyLmaJg0v-w?t=3">
-<img src="https://i.imgur.com/3alj3Dr.png"/>
+<img src="https://i.imgur.com/rxmbC80.png"/>
 </a>
 </p>
 
