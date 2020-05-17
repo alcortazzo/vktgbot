@@ -25,7 +25,7 @@
 |Text post with **photo**|**Yes**|Text post with photo
 |Text post with **photos**|**Yes**|Text post & post with photos
 |Text post with links|**Yes** |Text post with links
-|Text post with YT vids|**50/50**|Text post & preview's urls > **VK-API restrictions**
+|Text post with (yt/vk) video|**50/50**|Text post with video preview > **VK-API restrictions**
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
 |VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
 |Text post with polls|Not yet|Just text post for now
@@ -44,8 +44,8 @@ skipAdsPosts = True
    * if the post type is just text, it sends one text message to telegram
    * if the post type is text with **one photo**, it sends message with photo to telegram
    * if the post type is text with **photos**, it sends two messages to telegram: text message + message with images
-   * if the post type is text with **youtube video**, it sends message with **video preview** to telegram (because vk_api does not support youtube video links) 
-   * if the post type is text + audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
+   * if the post type is text with **youtube (or vk) video**, it sends message with **video preview** to telegram (because vk_api does not support youtube video links) 
+   * if the post type is text with audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
 * Then bot waits for the period set by the user and starts again
 
 ## Installation & Usage
