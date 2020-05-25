@@ -3,12 +3,14 @@
 
 '''
 Made by @alcortazzo
-v0.9.2
+v1.0
 '''
 
+import os
 import time
 import urllib
 import config
+import shutil
 import logging
 import requests
 import eventlet
@@ -52,6 +54,7 @@ def getData():
 
 def sendPosts(items, last_id):
     for item in items:
+        cleaning('before')
         isTypePost = 'post'
         isRepost = False
         # compares id of the last post and id from the file last_known_id.txt
@@ -85,8 +88,8 @@ def sendPosts(items, last_id):
 
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No photos in the post [post id:{!s}].'.format(item['id']))
-            logging.info('[Bot] [Info] No photos in the post [post id:{!s}].'.format(item['id']))
+                  '| [Bot] [Info] No photos in the post [post id:{!s}]'.format(item['id']))
+            logging.info('[Bot] [Info] No photos in the post [post id:{!s}]'.format(item['id']))
 
         try:
             if item['attachments'][0]['type'] == 'video':
@@ -94,8 +97,8 @@ def sendPosts(items, last_id):
                 videoUrlPreview = item['attachments'][0]['video']['image'][-1]['url']
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No videos in the post [post id:{!s}].'.format(item['id']))
-            logging.info('[Bot] [Info] No videos in the post [post id:{!s}].'.format(item['id']))
+                  '| [Bot] [Info] No videos in the post [post id:{!s}]'.format(item['id']))
+            logging.info('[Bot] [Info] No videos in the post [post id:{!s}]'.format(item['id']))
 
         try:
             if item['attachments'][0]['type'] == 'link':
@@ -105,6 +108,32 @@ def sendPosts(items, last_id):
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] [Info] No links in the post [post id:{!s}]'.format(item['id']))
             logging.info('[Bot] [Info] No links in the post [post id:{!s}]'.format(item['id']))
+
+        try:
+            if item['attachments'][0]['type'] == 'doc':
+                isTypePost = 'doc'
+                docurl = item['attachments'][0]['doc']['url']
+                if item['attachments'][0]['doc']['ext'] == 'gif':
+                    doc_is = 'gif'
+                    docurl_gif = urllib.request.urlopen(docurl).read()
+                else:
+                    doc_is = 'doc'
+                    doc_title = item['attachments'][0]['doc']['title']
+                    docurl_img = urllib.request.urlopen(docurl).read()
+                    with open(os.path.join('temp', doc_title), 'wb') as temp_file:
+                        temp_file.write(docurl_img)
+                        temp_file.close()
+                # elif item['attachments'][0]['doc']['ext'] == 'jpg' or item['attachments'][0]['doc']['ext'] == 'png':
+                #    doc_is = 'img'
+                #    file_extension = item['attachments'][0]['doc']['ext']
+                #    docurl_img = urllib.request.urlopen(docurl).read()
+                #    with open(os.path.join('temp', 'img.' + file_extension), 'wb') as temp_file:
+                #        temp_file.write(docurl_img)
+                #        temp_file.close()
+        except Exception as ex:
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                  '| [Bot] [Info] No documents/gifs in the post [post id:{!s}]'.format(item['id']))
+            logging.info('[Bot] [Info] No documents/gifs in the post [post id:{!s}]'.format(item['id']))
 
         # REPOST check
         try:
@@ -177,9 +206,10 @@ def sendPosts(items, last_id):
                     bot.send_message(config.tgChannel, '[ ](' + videoUrlPreview + ')' + item['text'],
                                      parse_mode='Markdown')
             elif isRepost:
-                bot.send_message(config.tgChannel,
-                                 '[ ](' + videoUrlPreview + ')' + item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
-                                 parse_mode='Markdown')
+                bot.send_message(
+                    config.tgChannel,
+                    '[ ](' + videoUrlPreview + ')' + item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
+                    parse_mode='Markdown')
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
             logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
@@ -192,8 +222,55 @@ def sendPosts(items, last_id):
                                  item['text'] + '\n\n' + linkurl + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
                                  parse_mode='Markdown')
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                  '| [Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
+            logging.info('[Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
+
+        elif isTypePost == 'doc':
+            howLong = len(item['text'])
+            if not isRepost:
+                if doc_is == 'gif':
+                    if howLong <= 1024:
+                        bot.send_video(config.tgChannel, docurl_gif, duration=None, caption=item['text'])
+                    elif howLong > 1024:
+                        bot.send_message(config.tgChannel, item['text'])
+                        bot.send_video(config.tgChannel, docurl_gif)
+                else:
+                    if howLong <= 1024:
+                        with open(os.path.join('temp', doc_title), 'rb') as temp_file:
+                            bot.send_document(config.tgChannel, temp_file, reply_to_message_id=None,
+                                              caption=item['text'])
+                    elif howLong > 1024:
+                        bot.send_message(config.tgChannel, item['text'])
+                        with open(os.path.join('temp', doc_title), 'rb') as temp_file:
+                            bot.send_document(config.tgChannel, temp_file)
+                # elif doc_is == 'img':
+                #    with open(os.path.join('temp', 'img.' + file_extension), 'rb') as temp_file:
+                #        bot.send_document(config.tgChannel, temp_file)
+            if isRepost:
+                if doc_is == 'gif':
+                    gif_text = item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_'
+                    if len(gif_text) <= 1024:
+                        bot.send_video(config.tgChannel, docurl_gif, duration=None, caption=gif_text,
+                                       reply_to_message_id=None, reply_markup=None, parse_mode='Markdown')
+                    elif len(gif_text) > 1024:
+                        bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                         parse_mode='Markdown')
+                        bot.send_video(config.tgChannel, docurl_gif)
+                else:
+                    with open(os.path.join('temp', doc_title), 'rb') as temp_file:
+                        doc_text = item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_'
+                        if len(doc_text) <= 1024:
+                            bot.send_document(config.tgChannel, temp_file, reply_to_message_id=None, caption=doc_text,
+                                              reply_markup=None, parse_mode='Markdown')
+                        elif len(doc_text) > 1024:
+                            bot.send_message(config.tgChannel,
+                                             item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                             parse_mode='Markdown')
+                            bot.send_document(config.tgChannel, temp_file)
+            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+                  '| [Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
+            logging.info('[Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
+        cleaning('after')
 
 
 def checkNewPost():
@@ -243,6 +320,17 @@ def checkNewPost():
     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [VK] Finished scanning')
     logging.info('[VK] Finished scanning')
     return
+
+
+def cleaning(when):
+    if when == 'before':
+        if 'temp' in os.listdir():
+            shutil.rmtree('temp')
+            os.mkdir('temp')
+        elif 'temp' not in os.listdir():
+            os.mkdir('temp')
+    elif when == 'after':
+        shutil.rmtree('temp')
 
 
 if __name__ == '__main__':
