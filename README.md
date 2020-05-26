@@ -112,3 +112,8 @@ $ python3 bot.py
 ```bash
 python bot.py
 ```
+
+## License
+
+GPLv3<br/>
+Original Creator - [alcortazzo](https://github.com/alcortazzo)
