@@ -22,11 +22,12 @@
 |Type of VK post|Is implemented?|What bot will send to Telegram
 |:---:|:---:|:---:|
 |Text post|**Yes**|Text post
-|Text post with **photo**|**Yes**|Text post with photo
+|Text post with **photo** / gif|**Yes**|Text post with photo / gif
 |Text post with **photos**|**Yes**|Text post & post with photos
 |Text post with links|**Yes** |Text post with links
 |Text post with (yt/vk) video|**50/50**|Text post with video preview > **VK-API restrictions**
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Text post with document|**Yes**|Text post with document|
 |VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
 |Text post with polls|Not yet|Just text post for now
 
@@ -49,14 +50,43 @@ skipAdsPosts = True
 * Then bot waits for the period set by the user and starts again
 
 ## Installation & Usage
-### Python 3
-#### Windows
+### Linux
+```bash
+# clone the repo
+$ git clone https://github.com/alcortazzo/vktgbot.git
+
+# change the working directory to vktgbot
+$ cd vktgbot
+
+# install python3 and python3-pip if they are not installed
+
+# install the requirements
+$ python3 -m pip install -r requirements.txt
 ```
-pip install -r requirements.txt
+### Windows
+ **If you want to use git**
+```bash
+# clone the repo
+git clone https://github.com/alcortazzo/vktgbot.git
+
+# change the working directory to vktgbot
+cd vktgbot
+
+# install python3 and python3-pip if they are not installed
+
+# install the requirements
+python -m pip install -r requirements.txt
 ```
-#### Linux
-```
-pip3 install -r requirements.txt
+**If you don't want to use git**
+1. [Download](https://github.com/alcortazzo/vktgbot/archive/master.zip)  vktgbot repo as ZIP
+2. Unzip vktgbot to your folder (for example C:\\Users\\%username%\\bots\\)
+3. Then open **cmd** or **powershell**
+```bash
+# change the working directory to vktgbot
+cd c:\\users\\%username%\\bots\\vktgbot
+
+# install the requirements
+python -m pip install -r requirements.txt
 ```
 ### Open **config** file and update the following variables:
 ```python
@@ -68,16 +98,17 @@ vkDomain = 'aaaaaaaa'
 * `tgChannel` is the link to channel in telegram `t.me/>>aaaa<<`. **You must add bot to this channel as an administrator**
 * `tgBotToken` is the bot token from [BotFather](t.me/BotFather)
 * `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
+  * **If the group is closed you should use your personal access token! [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)**
 * `vkDomain` is the link to vk public `vk.com/>>aaaaaaaa<<`
-#### Open **last_known_id.txt** file and write in it id of the last (not pinned!) post:
+#### Open **last_known_id.txt** file and write in it id of the last (not pinned!) post (optional):
 * Example: if link to post is `https://vk.com/wall-22822305_1070803` id of this post will be `1070803`
 * [PhotoExemple](https://i.imgur.com/eWpso0C.png)
 ### Launch the bot
-#### Windows
-```
-python bot.py
-```
 #### Linux
+```bash
+$ python3 bot.py
 ```
-python3 bot.py
+#### Windows
+```bash
+python bot.py
 ```
