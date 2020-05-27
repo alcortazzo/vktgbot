@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v1.0
+v1.0.1
 '''
 
 import os
@@ -23,13 +23,13 @@ print('\n\n            /$$         /$$               /$$                   /$$  
       '           | $$        | $$              | $$                  | $$    \n',
       ' /$$    /$$| $$   /$$ /$$$$$$    /$$$$$$ | $$$$$$$   /$$$$$$  /$$$$$$  \n',
       '|  $$  /$$/| $$  /$$/|_  $$_/   /$$__  $$| $$__  $$ /$$__  $$|_  $$_/  \n',
-      ' \  $$/$$/ | $$$$$$/   | $$    | $$  \ $$| $$  \ $$| $$  \ $$  | $$    \n',
-      '  \  $$$/  | $$_  $$   | $$ /$$| $$  | $$| $$  | $$| $$  | $$  | $$ /$$\n',
-      '   \  $/   | $$ \  $$  |  $$$$/|  $$$$$$$| $$$$$$$/|  $$$$$$/  |  $$$$/\n',
-      '    \_/    |__/  \__/   \___/   \____  $$|_______/  \______/    \___/  \n',
-      '                                /$$  \ $$                              \n',
+      ' \\  $$/$$/ | $$$$$$/   | $$    | $$  \\ $$| $$  \\ $$| $$  \\ $$  | $$    \n',
+      '  \\  $$$/  | $$_  $$   | $$ /$$| $$  | $$| $$  | $$| $$  | $$  | $$ /$$\n',
+      '   \\  $/   | $$ \\  $$  |  $$$$/|  $$$$$$$| $$$$$$$/|  $$$$$$/  |  $$$$/\n',
+      '    \\_/    |__/  \\__/   \\___/   \\____  $$|_______/  \\______/    \\___/  \n',
+      '                                /$$  \\ $$                              \n',
       '                               |  $$$$$$/                              \n',
-      '                                \______/                               \n\n')
+      '                                \\______/                               \n\n')
 
 
 def getData():
@@ -123,13 +123,6 @@ def sendPosts(items, last_id):
                     with open(os.path.join('temp', doc_title), 'wb') as temp_file:
                         temp_file.write(docurl_img)
                         temp_file.close()
-                # elif item['attachments'][0]['doc']['ext'] == 'jpg' or item['attachments'][0]['doc']['ext'] == 'png':
-                #    doc_is = 'img'
-                #    file_extension = item['attachments'][0]['doc']['ext']
-                #    docurl_img = urllib.request.urlopen(docurl).read()
-                #    with open(os.path.join('temp', 'img.' + file_extension), 'wb') as temp_file:
-                #        temp_file.write(docurl_img)
-                #        temp_file.close()
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '| [Bot] [Info] No documents/gifs in the post [post id:{!s}]'.format(item['id']))
@@ -243,9 +236,6 @@ def sendPosts(items, last_id):
                         bot.send_message(config.tgChannel, item['text'])
                         with open(os.path.join('temp', doc_title), 'rb') as temp_file:
                             bot.send_document(config.tgChannel, temp_file)
-                # elif doc_is == 'img':
-                #    with open(os.path.join('temp', 'img.' + file_extension), 'rb') as temp_file:
-                #        bot.send_document(config.tgChannel, temp_file)
             if isRepost:
                 if doc_is == 'gif':
                     gif_text = item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_'
