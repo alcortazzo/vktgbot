@@ -17,3 +17,9 @@ singleStart = False
 timeSleep = 60 * 2  # time in seconds
 isPinned = False
 skipAdsPosts = True
+
+proxyEnable = False # Set True if telegram is not available in your country
+proxyLogin = "bot" # Login for Socks5 proxy
+proxyPass = "12345" # Password for Socks5 proxy
+proxyIp = "myproxy.com" # Socks5 proxy ip
+proxyPort = "1234"  # Socks5 proxy port

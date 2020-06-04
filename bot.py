@@ -15,9 +15,13 @@ import logging
 import requests
 import eventlet
 from datetime import datetime
-from telebot import TeleBot, types
+from telebot import TeleBot, types, apihelper
+
 
 bot = TeleBot(config.tgBotToken)
+
+if config.proxyEnable:
+      apihelper.proxy = {'https':f'socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}'}
 
 print('\n\n            /$$         /$$               /$$                   /$$    \n',
       '           | $$        | $$              | $$                  | $$    \n',
