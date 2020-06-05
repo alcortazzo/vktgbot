@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v1.0.1
+v1.0.2
 '''
 
 import os
@@ -17,11 +17,10 @@ import eventlet
 from datetime import datetime
 from telebot import TeleBot, types, apihelper
 
-
 bot = TeleBot(config.tgBotToken)
 
 if config.proxyEnable:
-      apihelper.proxy = {'https':f'socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}'}
+    apihelper.proxy = {'https': f'socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}'}
 
 print('\n\n            /$$         /$$               /$$                   /$$    \n',
       '           | $$        | $$              | $$                  | $$    \n',
