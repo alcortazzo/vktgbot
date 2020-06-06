@@ -1,3 +1,4 @@
+
 <h1 id="-p-align-center-vktgbot-v0-8"><p align="center">vktgbot</h1>
 <p align=center>
     <a target="_blank" href="https://www.python.org/downloads/" title="Python Version"><img src="https://img.shields.io/badge/python-%3E=_3.5-purple.svg"></a>
@@ -100,6 +101,14 @@ vkDomain = 'aaaaaaaa'
 * `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
   * **If the group is closed you should use your personal access token! [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)**
 * `vkDomain` is the link to vk public `vk.com/>>aaaaaaaa<<`
+#### If Telegram is not available in your country, you should update these variables.
+```python
+proxyEnable = True
+proxyLogin = "bot"  
+proxyPass = "12345"  
+proxyIp = "myproxy.com"  
+proxyPort = "1234"
+```
 #### Open **last_known_id.txt** file and write in it id of the last (not pinned!) post (optional):
 * Example: if link to post is `https://vk.com/wall-22822305_1070803` id of this post will be `1070803`
 * [PhotoExemple](https://i.imgur.com/eWpso0C.png)
