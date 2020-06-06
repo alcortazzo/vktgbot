@@ -19,9 +19,6 @@ from telebot import TeleBot, types, apihelper
 
 bot = TeleBot(config.tgBotToken)
 
-if config.proxyEnable:
-    apihelper.proxy = {'https':f'socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}'}
-
 print('\n\n            /$$         /$$               /$$                   /$$    \n',
       '           | $$        | $$              | $$                  | $$    \n',
       ' /$$    /$$| $$   /$$ /$$$$$$    /$$$$$$ | $$$$$$$   /$$$$$$  /$$$$$$  \n',
@@ -33,6 +30,11 @@ print('\n\n            /$$         /$$               /$$                   /$$  
       '                                /$$  \\ $$                              \n',
       '                               |  $$$$$$/                              \n',
       '                                \\______/                               \n\n')
+
+# enable proxy for telegram
+if config.proxyEnable:
+    apihelper.proxy = {'https':'socks5://{!s}:{!s}@{!s}:{!s}'.format(config.proxyLogin, config.proxyPass,
+                                                                      config.proxyIp, config.proxyPort)}
 
 
 def getData():
