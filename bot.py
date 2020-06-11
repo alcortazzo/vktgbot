@@ -147,8 +147,11 @@ def sendPosts(items, last_id):
                 type(ex).__name__, item['id'], str(ex)))
 
         # send message according to post type
-        tries = 10  # attempts to send a message to telegram
+        tries = 5  # attempts to send a message to telegram
+        isPostSent = False
         for attempt in range(tries + 1):
+            if isPostSent:
+                continue
             try:
                 if isTypePost == 'post':
                     if not isRepost:
@@ -273,7 +276,9 @@ def sendPosts(items, last_id):
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
                     logging.info('[Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
+                isPostSent = True
             except Exception as ex:
+                isPostSent = False
                 print(
                     datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                     '| [WARNING] Something [{!s}] went wrong in sendPosts() [post id:{!s}] [{!s} try of {!s}]: {!s}'.format(
@@ -285,6 +290,7 @@ def sendPosts(items, last_id):
                         item['id'], attempt + 1, tries, str(ex)))
                 if attempt == tries - 1:
                     break
+                time.sleep(10)
                 continue
         cleaning('after')
 
