@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v1.0.4
+v1.1.0
 '''
 
 import os
@@ -139,6 +139,22 @@ def sendPosts(items, last_id):
                 isRepost = True
                 if item['copy_history'][0]['text'] != '':
                     textRepost = item['copy_history'][0]['text']
+                urlOfRepost = ''
+                try:
+                    if item['copy_history'][0]['attachments'][0]['type'] == 'photo':
+                        photoOfRepost = item['copy_history'][0]['attachments'][0]['photo']['sizes']
+                        if photoOfRepost[-1]['type'] == 'z':
+                            for url in photoOfRepost:
+                                if url['type'] == 'w':
+                                    urlOfRepost = url['url']
+                                    break
+                                elif url['type'] == 'z':
+                                    urlOfRepost = url['url']
+                                    break
+                        elif photoOfRepost[-1]['type'] != 'z':
+                            urlOfRepost = photoOfRepost[-1]['url']
+                except Exception as ex:
+                    logging.info('[Bot] [Info] No photo of repost in the post [post id:{!s}]'.format(item['id']))
         except Exception as ex:
             print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                   '[ERROR] {!s} in sendPosts() (RepostCheck) [post id:{!s}]: {!s}'.format(
@@ -157,7 +173,8 @@ def sendPosts(items, last_id):
                     if not isRepost:
                         bot.send_message(config.tgChannel, item['text'])
                     elif isRepost:
-                        bot.send_message(config.tgChannel, item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                        bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + correctTextForMarkdown(
+                            item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
@@ -176,7 +193,9 @@ def sendPosts(items, last_id):
                                 bot.send_message(config.tgChannel, item['text'])
                         elif isRepost:
                             bot.send_message(config.tgChannel,
-                                             item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                             '[ ](' + urlOfRepost + ')' + correctTextForMarkdown(
+                                                 item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(
+                                                 textRepost) + '_',
                                              parse_mode='Markdown')
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                               '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
@@ -193,11 +212,13 @@ def sendPosts(items, last_id):
                                 bot.send_photo(config.tgChannel, Photo, item['text'])
                             elif howLong > 1024:
                                 bot.send_message(config.tgChannel,
-                                                 '[ ](' + Photo + ')' + item['text'], parse_mode='Markdown')
+                                                 '[ ](' + Photo + ')' + correctTextForMarkdown(item['text']),
+                                                 parse_mode='Markdown')
                         elif isRepost:
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + Photo + ')' + item[
-                                                 'text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
+                                             '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + correctTextForMarkdown(
+                                                 item['text']) + '\n\n*REPOST ↓*\n\n_' + correctTextForMarkdown(
+                                                 textRepost) + '_',
                                              parse_mode='Markdown')
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                               '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
@@ -210,12 +231,14 @@ def sendPosts(items, last_id):
                         if howLong <= 1024:
                             bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
                         elif howLong > 1024:
-                            bot.send_message(config.tgChannel, '[ ](' + videoUrlPreview + ')' + item['text'],
+                            bot.send_message(config.tgChannel,
+                                             '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
                                              parse_mode='Markdown')
                     elif isRepost:
                         bot.send_message(
                             config.tgChannel,
-                            '[ ](' + videoUrlPreview + ')' + item['text'] + '\n\n*REPOST ↓*\n\n_' + textRepost + '_',
+                            '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(
+                                item['text']) + '\n\n*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                             parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
@@ -226,8 +249,9 @@ def sendPosts(items, last_id):
                         bot.send_message(config.tgChannel, item['text'] + '\n\n' + linkurl)
                     elif isRepost:
                         bot.send_message(config.tgChannel,
-                                         item[
-                                             'text'] + '\n\n' + linkurl + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                         '[ ](' + urlOfRepost + ')' +
+                                         correctTextForMarkdown(item['text']) + '\n\n' + linkurl +
+                                         '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
@@ -251,26 +275,31 @@ def sendPosts(items, last_id):
                                 bot.send_message(config.tgChannel, item['text'])
                                 with open(os.path.join('temp', doc_title), 'rb') as temp_file:
                                     bot.send_document(config.tgChannel, temp_file)
-                    if isRepost:
+                    elif isRepost:
                         if doc_is == 'gif':
-                            gif_text = item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_'
+                            gif_text = correctTextForMarkdown(
+                                item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_'
                             if len(gif_text) <= 1024:
                                 bot.send_video(config.tgChannel, docurl_gif, duration=None, caption=gif_text,
                                                reply_to_message_id=None, reply_markup=None, parse_mode='Markdown')
                             elif len(gif_text) > 1024:
                                 bot.send_message(config.tgChannel,
-                                                 item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                                 correctTextForMarkdown(item['text']) + '\n\n*REPOST ↓*\n\n' +
+                                                 '_' + correctTextForMarkdown(textRepost) + '_',
                                                  parse_mode='Markdown')
                                 bot.send_video(config.tgChannel, docurl_gif)
                         else:
                             with open(os.path.join('temp', doc_title), 'rb') as temp_file:
-                                doc_text = item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_'
+                                doc_text = correctTextForMarkdown(
+                                    item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(
+                                    textRepost) + '_'
                                 if len(doc_text) <= 1024:
                                     bot.send_document(config.tgChannel, temp_file, reply_to_message_id=None,
                                                       caption=doc_text, reply_markup=None, parse_mode='Markdown')
                                 elif len(doc_text) > 1024:
                                     bot.send_message(config.tgChannel,
-                                                     item['text'] + '\n\n*REPOST ↓*\n\n' + '_' + textRepost + '_',
+                                                     correctTextForMarkdown(item['text']) + '\n\n*REPOST ↓*\n\n' +
+                                                     '_' + correctTextForMarkdown(textRepost) + '_',
                                                      parse_mode='Markdown')
                                     bot.send_document(config.tgChannel, temp_file)
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
@@ -345,14 +374,34 @@ def checkNewPost():
 
 
 def cleaning(when):
-    if when == 'before':
-        if 'temp' in os.listdir():
+    try:
+        if when == 'before':
+            if 'temp' in os.listdir():
+                shutil.rmtree('temp')
+                os.mkdir('temp')
+            elif 'temp' not in os.listdir():
+                os.mkdir('temp')
+        elif when == 'after':
             shutil.rmtree('temp')
-            os.mkdir('temp')
-        elif 'temp' not in os.listdir():
-            os.mkdir('temp')
-    elif when == 'after':
-        shutil.rmtree('temp')
+    except Exception as ex:
+        print(
+            datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+            '| [ERROR] Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
+        logging.error(
+            '[ERROR] Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
+
+
+# If the markdown parser finds an opening markdown symbol without the corresponding closing one, it throws an error
+# So if in the text an odd number of symbols '*' or '_' correctTextForMarkdown will delete them
+# https://github.com/python-telegram-bot/python-telegram-bot/issues/131#issuecomment-167003086
+def correctTextForMarkdown(text):
+    symbols = []
+    if text.count('*') % 2 != 0:
+        symbols.append('*')
+    if text.count('_') % 2 != 0:
+        symbols.append('_')
+    niceText = ''.join([l for l in text if l not in symbols])
+    return niceText
 
 
 if __name__ == '__main__':
