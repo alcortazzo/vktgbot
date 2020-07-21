@@ -3,7 +3,7 @@
 
 '''
 Made by @alcortazzo
-v1.1.0
+v1.1.1
 '''
 
 import os
@@ -245,12 +245,16 @@ def sendPosts(items, last_id):
                     logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
+                    if linkurl in item['text']:
+                        linkurl = ''
+                    elif linkurl not in item['text']:
+                        linkurl = '\n\n' + linkurl
                     if not isRepost:
-                        bot.send_message(config.tgChannel, item['text'] + '\n\n' + linkurl)
+                        bot.send_message(config.tgChannel, item['text'] + linkurl)
                     elif isRepost:
                         bot.send_message(config.tgChannel,
                                          '[ ](' + urlOfRepost + ')' +
-                                         correctTextForMarkdown(item['text']) + '\n\n' + linkurl +
+                                         correctTextForMarkdown(item['text']) + linkurl +
                                          '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
