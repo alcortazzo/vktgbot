@@ -5,7 +5,8 @@
     <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
     <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
 </p>    
-<p align="center">Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.
+<p align="center"><b>Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
+
 <p align="center">
     <a href="#what-is-now-implemented">What is now implemented</a>
     &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
@@ -18,6 +19,7 @@
 <img src="https://i.imgur.com/rxmbC80.png"/>
 </a>
 </p>
+<p align="center"><i>rus: Телеграм бот для парсинга (репоста) постов из пабликов ВК в Телеграм каналы</i></p>
 
 ## What is now implemented
 |Type of VK post|Is implemented?|What bot will send to Telegram
