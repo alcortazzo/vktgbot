@@ -16,7 +16,7 @@
 </p>
 <p align="center">
 <a href="https://youtu.be/DyLmaJg0v-w?t=3">
-<img src="https://i.imgur.com/rxmbC80.png"/>
+<img src="https://github.com/alcortazzo/vktgbot/blob/master/images/code.png"/>
 </a>
 </p>
 <p align="center"><i>rus: Телеграм бот для парсинга (репоста) постов из пабликов ВК в Телеграм каналы</i></p>
