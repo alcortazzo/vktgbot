@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
-Made by @alcortazzo
-v1.1.1
-'''
+# Made by @alcortazzo
+# v1.2
 
 import os
 import time
@@ -173,8 +171,12 @@ def sendPosts(items, last_id):
                     if not isRepost:
                         bot.send_message(config.tgChannel, item['text'])
                     elif isRepost:
-                        bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + correctTextForMarkdown(
-                            item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
+                        if item['text'] != '':
+                            item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                        elif item['text'] == '':
+                            item_text = ''
+                        bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + item_text +
+                                         '*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
@@ -192,10 +194,13 @@ def sendPosts(items, last_id):
                             if item['text'] != '':
                                 bot.send_message(config.tgChannel, item['text'])
                         elif isRepost:
+                            if item['text'] != '':
+                                item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                            elif item['text'] == '':
+                                item_text = ''
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + urlOfRepost + ')' + correctTextForMarkdown(
-                                                 item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(
-                                                 textRepost) + '_',
+                                             '[ ](' + urlOfRepost + ')' + item_text + '*REPOST ↓*\n\n' + '_' +
+                                             correctTextForMarkdown(textRepost) + '_',
                                              parse_mode='Markdown')
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                               '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
@@ -215,10 +220,13 @@ def sendPosts(items, last_id):
                                                  '[ ](' + Photo + ')' + correctTextForMarkdown(item['text']),
                                                  parse_mode='Markdown')
                         elif isRepost:
+                            if item['text'] != '':
+                                item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                            elif item['text'] == '':
+                                item_text = ''
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + correctTextForMarkdown(
-                                                 item['text']) + '\n\n*REPOST ↓*\n\n_' + correctTextForMarkdown(
-                                                 textRepost) + '_',
+                                             '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + item_text +
+                                             '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                                              parse_mode='Markdown')
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                               '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
@@ -235,11 +243,14 @@ def sendPosts(items, last_id):
                                              '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
                                              parse_mode='Markdown')
                     elif isRepost:
-                        bot.send_message(
-                            config.tgChannel,
-                            '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(
-                                item['text']) + '\n\n*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
-                            parse_mode='Markdown')
+                        if item['text'] != '':
+                            item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                        elif item['text'] == '':
+                            item_text = ''
+                        bot.send_message(config.tgChannel,
+                                         '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
+                                         '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
+                                         parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                           '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
                     logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
@@ -280,29 +291,31 @@ def sendPosts(items, last_id):
                                 with open(os.path.join('temp', doc_title), 'rb') as temp_file:
                                     bot.send_document(config.tgChannel, temp_file)
                     elif isRepost:
+                        if item['text'] != '':
+                            item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                        elif item['text'] == '':
+                            item_text = ''
                         if doc_is == 'gif':
-                            gif_text = correctTextForMarkdown(
-                                item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_'
+                            gif_text = item_text + '*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_'
                             if len(gif_text) <= 1024:
                                 bot.send_video(config.tgChannel, docurl_gif, duration=None, caption=gif_text,
                                                reply_to_message_id=None, reply_markup=None, parse_mode='Markdown')
                             elif len(gif_text) > 1024:
                                 bot.send_message(config.tgChannel,
-                                                 correctTextForMarkdown(item['text']) + '\n\n*REPOST ↓*\n\n' +
+                                                 item_text + '*REPOST ↓*\n\n' +
                                                  '_' + correctTextForMarkdown(textRepost) + '_',
                                                  parse_mode='Markdown')
                                 bot.send_video(config.tgChannel, docurl_gif)
                         else:
                             with open(os.path.join('temp', doc_title), 'rb') as temp_file:
-                                doc_text = correctTextForMarkdown(
-                                    item['text']) + '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(
+                                doc_text = item_text + '*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(
                                     textRepost) + '_'
                                 if len(doc_text) <= 1024:
                                     bot.send_document(config.tgChannel, temp_file, reply_to_message_id=None,
                                                       caption=doc_text, reply_markup=None, parse_mode='Markdown')
                                 elif len(doc_text) > 1024:
                                     bot.send_message(config.tgChannel,
-                                                     correctTextForMarkdown(item['text']) + '\n\n*REPOST ↓*\n\n' +
+                                                     item_text + '*REPOST ↓*\n\n' +
                                                      '_' + correctTextForMarkdown(textRepost) + '_',
                                                      parse_mode='Markdown')
                                     bot.send_document(config.tgChannel, temp_file)
@@ -329,6 +342,7 @@ def sendPosts(items, last_id):
 
 
 def checkNewPost():
+    isBotChannelAdmin()
     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [VK] Started scanning for new posts')
     logging.info('[VK] Started scanning for new posts')
     with open('last_known_id.txt', 'r') as file:
@@ -369,7 +383,7 @@ def checkNewPost():
                     logging.info('[Info] New last id of vk post is {!s}'.format((entries[0]['id'])))
     except Exception as ex:
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| Excepion in type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
+              '| Exception in type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
         logging.error('Exception of type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
         pass
     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [VK] Finished scanning')
@@ -404,8 +418,19 @@ def correctTextForMarkdown(text):
         symbols.append('*')
     if text.count('_') % 2 != 0:
         symbols.append('_')
-    niceText = ''.join([l for l in text if l not in symbols])
+    niceText = ''.join([a for a in text if a not in symbols])
     return niceText
+
+
+# method for checking if a bot is a channel administrator
+def isBotChannelAdmin():
+    try:
+        _ = bot.get_chat_administrators(config.tgChannel)
+    except Exception as ex:
+        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+              '| [ERROR] Bot is not channel admin')
+        logging.error('[ERROR] Bot is not channel admin')
+        exit()
 
 
 if __name__ == '__main__':
