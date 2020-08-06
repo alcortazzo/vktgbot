@@ -1,2 +1,6 @@
-__pycache__
-bot.log
+.idea/
+__pycache__/
+test.*
+*.log
+*.iml
+temp/
