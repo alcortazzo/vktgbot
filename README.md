@@ -25,8 +25,7 @@
 |Type of VK post|Is implemented?|What bot will send to Telegram
 |:---:|:---:|:---:|
 |Text post|**Yes**|Text post
-|Text post with **photo** / gif|**Yes**|Text post with photo / gif
-|Text post with **photos**|**Yes**|Text post & post with photos
+|Text post with photo / gif|**Yes**|Text post with photo / gif
 |Text post with links|**Yes** |Text post with links
 |Text post with (yt/vk) video|**50/50**|Text post with video preview > **VK-API restrictions**
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
@@ -46,8 +45,7 @@ skipAdsPosts = True
 * If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
  * sendPosts() checks post type and
    * if the post type is just text, it sends one text message to telegram
-   * if the post type is text with **one photo**, it sends message with photo to telegram
-   * if the post type is text with **photos**, it sends two messages to telegram: text message + message with images
+   * if the post type is text with photos, it sends message with photos to telegram
    * if the post type is text with **youtube (or vk) video**, it sends message with **video preview** to telegram (because vk_api does not support youtube video links) 
    * if the post type is text with audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
 * Then bot waits for the period set by the user and starts again
