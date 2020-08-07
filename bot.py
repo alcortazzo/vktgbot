@@ -175,11 +175,11 @@ def sendPosts(items, last_id):
                             item_text = correctTextForMarkdown(item['text']) + '\n\n'
                         elif item['text'] == '':
                             item_text = ''
-                        bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + item_text +
+                        bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + item_text +
                                          '*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                        '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                          '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
                     logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'photo':
@@ -206,15 +206,15 @@ def sendPosts(items, last_id):
                                 item_text = ''
 
                             if howLong <= 1004:
-                                listOfPhotos[0].caption = ('[ ](' + urlOfRepost + ')'
-                                + item_text + '*REPOST ↓*\n\n' + '_' +
-                                correctTextForMarkdown(textRepost) + '_')
+                                listOfPhotos[0].caption = ('[ ](' + urlOfRepost + ')'
+                                                           + item_text + '*REPOST ↓*\n\n' + '_' +
+                                                           correctTextForMarkdown(textRepost) + '_')
                                 listOfPhotos[0].parse_mode = 'Markdown'
                             elif howLong > 1004:
                                 bot.send_message(config.tgChannel,
-                                '[ ](' + urlOfRepost + ')' + item_text + '*REPOST ↓*\n\n' + '_' +
-                                correctTextForMarkdown(textRepost) + '_',
-                                parse_mode='Markdown')
+                                                 '[ ](' + urlOfRepost + ')' + item_text + '*REPOST ↓*\n\n' + '_' +
+                                                 correctTextForMarkdown(textRepost) + '_',
+                                                 parse_mode='Markdown')
 
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
                               '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
@@ -231,7 +231,7 @@ def sendPosts(items, last_id):
                                 bot.send_photo(config.tgChannel, Photo, item['text'])
                             elif howLong > 1024:
                                 bot.send_message(config.tgChannel,
-                                                 '[ ](' + Photo + ')' + correctTextForMarkdown(item['text']),
+                                                 '[ ](' + Photo + ')' + correctTextForMarkdown(item['text']),
                                                  parse_mode='Markdown')
                         elif isRepost:
                             if item['text'] != '':
@@ -239,7 +239,7 @@ def sendPosts(items, last_id):
                             elif item['text'] == '':
                                 item_text = ''
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + item_text +
+                                             '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + item_text +
                                              '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                                              parse_mode='Markdown')
                         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
@@ -254,7 +254,7 @@ def sendPosts(items, last_id):
                             bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
                         elif howLong > 1024:
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
+                                             '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
                                              parse_mode='Markdown')
                     elif isRepost:
                         if item['text'] != '':
@@ -262,7 +262,7 @@ def sendPosts(items, last_id):
                         elif item['text'] == '':
                             item_text = ''
                         bot.send_message(config.tgChannel,
-                                         '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
+                                         '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
                                          '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
                     print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
@@ -278,7 +278,7 @@ def sendPosts(items, last_id):
                         bot.send_message(config.tgChannel, item['text'] + linkurl)
                     elif isRepost:
                         bot.send_message(config.tgChannel,
-                                         '[ ](' + urlOfRepost + ')' +
+                                         '[ ](' + urlOfRepost + ')' +
                                          correctTextForMarkdown(item['text']) + linkurl +
                                          '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
