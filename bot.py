@@ -137,6 +137,8 @@ def sendPosts(items, last_id):
                 isRepost = True
                 if item['copy_history'][0]['text'] != '':
                     textRepost = item['copy_history'][0]['text']
+                else:
+                    textRepost = ''
                 urlOfRepost = ''
                 try:
                     if item['copy_history'][0]['attachments'][0]['type'] == 'photo':
