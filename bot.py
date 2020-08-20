@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Made by @alcortazzo
-# v1.2
+# Made by alcortazzo
+# v1.3
 
 import os
 import time
@@ -170,6 +170,9 @@ def sendPosts(items, last_id):
                 continue
             try:
                 if isTypePost == 'post':
+                    if not config.parsePost:
+                        isPostSent = True
+                        continue
                     if not isRepost:
                         bot.send_message(config.tgChannel, item['text'])
                     elif isRepost:
@@ -185,6 +188,9 @@ def sendPosts(items, last_id):
                     logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'photo':
+                    if not config.parsePhoto:
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     listOfPhotos = []
                     # send messages with photos
@@ -249,6 +255,9 @@ def sendPosts(items, last_id):
                         logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'video':
+                    if not config.parseVideo:
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     # send messages with video preview
                     if not isRepost:
@@ -272,6 +281,9 @@ def sendPosts(items, last_id):
                     logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
+                    if not config.parseLink:
+                        isPostSent = True
+                        continue
                     if linkurl in item['text']:
                         linkurl = ''
                     elif linkurl not in item['text']:
@@ -289,6 +301,9 @@ def sendPosts(items, last_id):
                     logging.info('[Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'doc':
+                    if not config.parseDoc:
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     if not isRepost:
                         if doc_is == 'gif':
