@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.3.1
+# v1.3.2
 
 import os
 import time
@@ -16,6 +16,12 @@ from datetime import datetime
 from telebot import TeleBot, types, apihelper
 
 bot = TeleBot(config.tgBotToken)
+
+if config.tgLogChannel != '@cccc' and config.tgLogChannel != '@' and config.tgLogChannel != '':
+    bot_2 = TeleBot(config.tgBotToken)
+    isBotForLog = True
+else:
+    isBotForLog = False
 
 print('\n\n            /$$         /$$               /$$                   /$$    \n',
       '           | $$        | $$              | $$                  | $$    \n',
@@ -421,17 +427,30 @@ def isBotChannelAdmin():
 
 def addLog(type, text):
     if type == 'w':  # WARNING
+        log_message = '[WARNING] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| [WARNING] {!s}'.format(text))
-        logging.warning('[WARNING] {!s}'.format(text))
+              '| ' + log_message)
+        logging.warning(log_message)
+        sendLog(log_message)
     elif type == 'i':  # INFO
+        log_message = '[Bot] [Info] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| [Bot] [Info] {!s}'.format(text))
-        logging.info('[Bot] [Info] {!s}'.format(text))
+              '| ' + log_message)
+        logging.info(log_message)
+        sendLog(log_message)
     elif type == 'e':  # ERROR
+        log_message = '[ERROR] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '[ERROR] {!s}'.format(text))
-        logging.error('[ERROR] {!s}'.format(text))
+              '| ' + log_message)
+        logging.error(log_message)
+        sendLog(log_message)
+
+
+def sendLog(log_message):
+    if isBotForLog:
+        log_message_temp = '<code>' + log_message + '</code>\ntgChannel = ' + config.tgChannel + '\nvkDomain = <code>' + \
+                           config.vkDomain + '</code>'
+        bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode='HTML')
 
 
 if __name__ == '__main__':

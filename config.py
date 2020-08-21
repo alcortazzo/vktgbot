@@ -6,6 +6,10 @@ tgBotToken = '1234567890:AAA-AaA1aaa1AAaaAa1a1AAAAA-a1aa1-Aa'  # your token from
 vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0'  # your token from https://vk.com/dev/authcode_flow_user
 vkDomain = 'bbbb'  # domain of vk channel (vk.com/>>>>aaaaaaaa<<<<)
 
+tgLogChannel = '@cccc'  # link to another channel in telegram if you want to get bot's log message
+                        # !!! you must add bot to this channel as an administrator
+                        # yes, you can use the same bot as for the main task
+
 reqVer = 5.103  # version of VK API [wall.get method]
 reqCount = 2  # number of posts to return (2 - 100)
 reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; others — posts by someone else;
