@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.2
+# v1.3.1
 
 import os
 import time
@@ -47,9 +47,7 @@ def getData():
                                     'count': config.reqCount})
         return data.json()['response']['items']
     except eventlet.timeout.Timeout:
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| [WARNING] Got Timeout while retrieving VK JSON data. Cancelling...')
-        logging.warning('[WARNING] Got Timeout while retrieving VK JSON data. Cancelling...')
+        addLog('w', 'Got Timeout while retrieving VK JSON data. Cancelling...')
         return None
     finally:
         timeout.cancel()
@@ -90,27 +88,21 @@ def sendPosts(items, last_id):
                         urlsPhoto.append(urls[-1]['url'])
 
         except Exception as ex:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No photos in the post [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] [Info] No photos in the post [post id:{!s}]'.format(item['id']))
+            addLog('i', 'No photos in the post [post id:{!s}]'.format(item['id']))
 
         try:
             if item['attachments'][0]['type'] == 'video':
                 isTypePost = 'video'
                 videoUrlPreview = item['attachments'][0]['video']['image'][-1]['url']
         except Exception as ex:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No videos in the post [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] [Info] No videos in the post [post id:{!s}]'.format(item['id']))
+            addLog('i', 'No videos in the post [post id:{!s}]'.format(item['id']))
 
         try:
             if item['attachments'][0]['type'] == 'link':
                 isTypePost = 'link'
                 linkurl = item['attachments'][0]['link']['url']
         except Exception as ex:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No links in the post [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] [Info] No links in the post [post id:{!s}]'.format(item['id']))
+            addLog('i', 'No links in the post [post id:{!s}]'.format(item['id']))
 
         try:
             if item['attachments'][0]['type'] == 'doc':
@@ -127,9 +119,7 @@ def sendPosts(items, last_id):
                         temp_file.write(docurl_img)
                         temp_file.close()
         except Exception as ex:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [Bot] [Info] No documents/gifs in the post [post id:{!s}]'.format(item['id']))
-            logging.info('[Bot] [Info] No documents/gifs in the post [post id:{!s}]'.format(item['id']))
+            addLog('i', 'No documents/gifs in the post [post id:{!s}]'.format(item['id']))
 
         # REPOST check
         try:
@@ -154,12 +144,9 @@ def sendPosts(items, last_id):
                         elif photoOfRepost[-1]['type'] != 'z':
                             urlOfRepost = photoOfRepost[-1]['url']
                 except Exception as ex:
-                    logging.info('[Bot] [Info] No photo of repost in the post [post id:{!s}]'.format(item['id']))
+                    addLog('i', 'No photo of repost in the post [post id:{!s}]'.format(item['id']))
         except Exception as ex:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '[ERROR] {!s} in sendPosts() (RepostCheck) [post id:{!s}]: {!s}'.format(
-                      type(ex).__name__, item['id'], str(ex)))
-            logging.error('[ERROR] {!s} in sendPosts() (RepostCheck) [post id:{!s}]: {!s}'.format(
+            addLog('e', '{!s} in sendPosts() (RepostCheck) [post id:{!s}]: {!s}'.format(
                 type(ex).__name__, item['id'], str(ex)))
 
         # send message according to post type
@@ -170,6 +157,10 @@ def sendPosts(items, last_id):
                 continue
             try:
                 if isTypePost == 'post':
+                    if not config.parsePost:
+                        addLog('i', 'Text post was skipped [post id:{!s}]'.format(item['id']))
+                        isPostSent = True
+                        continue
                     if not isRepost:
                         bot.send_message(config.tgChannel, item['text'])
                     elif isRepost:
@@ -180,11 +171,13 @@ def sendPosts(items, last_id):
                         bot.send_message(config.tgChannel, '[ ](' + urlOfRepost + ')' + item_text +
                                          '*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
-                    logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                    addLog('i', 'Text post sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'photo':
+                    if not config.parsePhoto:
+                        addLog('i', 'Post with photos was skipped [post id:{!s}]'.format(item['id']))
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     listOfPhotos = []
                     # send messages with photos
@@ -218,13 +211,10 @@ def sendPosts(items, last_id):
                                                  correctTextForMarkdown(textRepost) + '_',
                                                  parse_mode='Markdown')
 
-                        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                              '| [Bot] Text post sent [post id:{!s}]'.format(item['id']))
-                        logging.info('[Bot] Text post sent [post id:{!s}]'.format(item['id']))
+                        addLog('i', 'Text post sent [post id:{!s}]'.format(item['id']))
                         bot.send_media_group(config.tgChannel, listOfPhotos)
-                        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                              '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
-                        logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+                        addLog('i', 'Post with photo sent [post id:{!s}]'.format(item['id']))
+
                     elif len(urlsPhoto) == 1:
                         Photo = urlsPhoto[0]
                         howLong = len(item['text'])
@@ -244,11 +234,13 @@ def sendPosts(items, last_id):
                                              '[ ](' + urlOfRepost + ')' + '[ ](' + Photo + ')' + item_text +
                                              '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                                              parse_mode='Markdown')
-                        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                              '| [Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
-                        logging.info('[Bot] Post with photo sent [post id:{!s}]'.format(item['id']))
+                        addLog('i', 'Post with photo sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'video':
+                    if not config.parseVideo:
+                        addLog('i', 'Post with video was skipped [post id:{!s}]'.format(item['id']))
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     # send messages with video preview
                     if not isRepost:
@@ -267,11 +259,13 @@ def sendPosts(items, last_id):
                                          '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
                                          '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
-                    logging.info('[Bot] Post with video preview sent [post id:{!s}]'.format(item['id']))
+                    addLog('i', 'Post with video preview sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
+                    if not config.parseLink:
+                        addLog('i', 'Post with links was skipped [post id:{!s}]'.format(item['id']))
+                        isPostSent = True
+                        continue
                     if linkurl in item['text']:
                         linkurl = ''
                     elif linkurl not in item['text']:
@@ -284,11 +278,13 @@ def sendPosts(items, last_id):
                                          correctTextForMarkdown(item['text']) + linkurl +
                                          '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                          parse_mode='Markdown')
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
-                    logging.info('[Bot] Text post with link sent [post id:{!s}]'.format(item['id']))
+                    addLog('i', 'Text post with link sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'doc':
+                    if not config.parseDoc:
+                        addLog('i', 'Post with docs/gif was skipped [post id:{!s}]'.format(item['id']))
+                        isPostSent = True
+                        continue
                     howLong = len(item['text'])
                     if not isRepost:
                         if doc_is == 'gif':
@@ -335,21 +331,12 @@ def sendPosts(items, last_id):
                                                      '_' + correctTextForMarkdown(textRepost) + '_',
                                                      parse_mode='Markdown')
                                     bot.send_document(config.tgChannel, temp_file)
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
-                    logging.info('[Bot] Post with document/gif sent [post id:{!s}]'.format(item['id']))
+                    addLog('i', 'Post with document/gif sent [post id:{!s}]'.format(item['id']))
                 isPostSent = True
             except Exception as ex:
                 isPostSent = False
-                print(
-                    datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                    '| [WARNING] Something [{!s}] went wrong in sendPosts() [post id:{!s}] [{!s} try of {!s}]: {!s}'.format(
-                        type(ex).__name__,
-                        item['id'], attempt + 1, tries, str(ex)))
-                logging.warning(
-                    '[WARNING] Something [{!s}] went wrong in sendPosts() [post id:{!s}] [{!s} try of {!s}]: {!s}'.format(
-                        type(ex).__name__,
-                        item['id'], attempt + 1, tries, str(ex)))
+                addLog('w', 'Something [{!s}] went wrong in sendPosts() [post id:{!s}] [{!s} try of {!s}]: {!s}'.format(
+                    type(ex).__name__, item['id'], attempt + 1, tries, str(ex)))
                 if attempt == tries - 1:
                     break
                 time.sleep(10)
@@ -359,17 +346,13 @@ def sendPosts(items, last_id):
 
 def checkNewPost():
     isBotChannelAdmin()
-    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [VK] Started scanning for new posts')
-    logging.info('[VK] Started scanning for new posts')
+    addLog('i', '[VK] Started scanning for new posts')
     with open('last_known_id.txt', 'r') as file:
         last_id = int(file.read())
         if last_id is None:
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                  '| [ERROR] Could not read from storage. Skipped iteration')
-            logging.warning('[VK] Could not read from storage. Skipped iteration')
+            addLog('e', 'Could not read from storage. Skipped iteration')
             return
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Info] Last id of vk post is {!s}'.format(last_id))
-        logging.info('[Info] Last id of vk post is {!s}'.format(last_id))
+        addLog('i', 'Last id of vk post is {!s}'.format(last_id))
     try:
         feed = getData()
         # continue if we received data
@@ -389,21 +372,14 @@ def checkNewPost():
                 try:
                     pinned = entries[0]['is_pinned']
                     file.write(str(entries[1]['id']))
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Info] New last id of vk post is {!s}'.format((entries[1]['id'])))
-                    logging.info('[Info] New last id of vk post is {!s}'.format((entries[1]['id'])))
+                    addLog('i', 'New last id of vk post is {!s}'.format((entries[1]['id'])))
                 except KeyError:
                     file.write(str(entries[0]['id']))
-                    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-                          '| [Info] New last id of vk post is {!s}'.format((entries[0]['id'])))
-                    logging.info('[Info] New last id of vk post is {!s}'.format((entries[0]['id'])))
+                    addLog('i', 'New last id of vk post is {!s}'.format((entries[0]['id'])))
     except Exception as ex:
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| Exception in type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
-        logging.error('Exception of type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
+        addLog('e', 'Exception in type {!s} in checkNewPost(): {!s}'.format(type(ex).__name__, str(ex)))
         pass
-    print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [VK] Finished scanning')
-    logging.info('[VK] Finished scanning')
+    addLog('i', '[VK] Finished scanning')
     return
 
 
@@ -418,11 +394,7 @@ def cleaning(when):
         elif when == 'after':
             shutil.rmtree('temp')
     except Exception as ex:
-        print(
-            datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-            '| [ERROR] Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
-        logging.error(
-            '[ERROR] Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
+        addLog('e', 'Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
 
 
 # If the markdown parser finds an opening markdown symbol without the corresponding closing one, it throws an error
@@ -443,10 +415,23 @@ def isBotChannelAdmin():
     try:
         _ = bot.get_chat_administrators(config.tgChannel)
     except Exception as ex:
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
-              '| [ERROR] Bot is not channel admin')
-        logging.error('[ERROR] Bot is not channel admin')
+        addLog('e', 'Bot is not channel admin')
         exit()
+
+
+def addLog(type, text):
+    if type == 'w':  # WARNING
+        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+              '| [WARNING] {!s}'.format(text))
+        logging.warning('[WARNING] {!s}'.format(text))
+    elif type == 'i':  # INFO
+        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+              '| [Bot] [Info] {!s}'.format(text))
+        logging.info('[Bot] [Info] {!s}'.format(text))
+    elif type == 'e':  # ERROR
+        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+              '[ERROR] {!s}'.format(text))
+        logging.error('[ERROR] {!s}'.format(text))
 
 
 if __name__ == '__main__':
@@ -456,12 +441,9 @@ if __name__ == '__main__':
     if not config.singleStart:
         while True:
             checkNewPost()
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Script went to sleep for', config.timeSleep,
-                  'seconds\n\n')
-            logging.info('[Bot] Script went to sleep.\n\n')
+            addLog('i', 'Script went to sleep for ' + str(config.timeSleep) + ' seconds\n\n')
             # pause for n minutes (timeSleep in config.py)
             time.sleep(int(config.timeSleep))
     elif config.singleStart:
         checkNewPost()
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), '| [Bot] Script exited.\n')
-        logging.info('[Bot] Script exited.\n')
+        addLog('i', 'Script exited.')

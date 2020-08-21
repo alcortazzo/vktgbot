@@ -7,7 +7,7 @@ vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000d
 vkDomain = 'bbbb'  # domain of vk channel (vk.com/>>>>aaaaaaaa<<<<)
 
 reqVer = 5.103  # version of VK API [wall.get method]
-reqCount = 2  # number of posts to return (maximum 100)
+reqCount = 2  # number of posts to return (2 - 100)
 reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; others — posts by someone else;
                      # all — posts by the wall owner and others (default)
                      # postponed — timed posts (only available for calls with an access_token)
@@ -17,6 +17,12 @@ singleStart = False
 timeSleep = 60 * 2  # time in seconds
 isPinned = False
 skipAdsPosts = True
+
+parsePost = True  # bot will skip just text posts if the value is False
+parsePhoto = True  # bot will skip photo posts if the value is False
+parseVideo = True  # bot will skip video posts if the value is False
+parseLink = True  # bot will skip posts with link if the value is False
+parseDoc = True  # bot will skip posts with docs/gif if the value is False
 
 proxyEnable = False  # Set True if telegram is not available in your country
 proxyLogin = "bot"  # Login for Socks5 proxy
