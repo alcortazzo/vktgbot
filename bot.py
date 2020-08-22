@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.3.2
+# v1.3.3
 
 import os
 import time
@@ -17,7 +17,7 @@ from telebot import TeleBot, types, apihelper
 
 bot = TeleBot(config.tgBotToken)
 
-if config.tgLogChannel != '@cccc' and config.tgLogChannel != '@' and config.tgLogChannel != '':
+if len(config.tgLogChannel) < 6 and config.tgLogChannel != '@' and config.tgLogChannel != '':
     bot_2 = TeleBot(config.tgBotToken)
     isBotForLog = True
 else:
@@ -61,6 +61,7 @@ def getData():
 
 def sendPosts(items, last_id):
     for item in items:
+        addLog('i', 'Post id: {!s}'.format(item['id']))
         cleaning('before')
         isTypePost = 'post'
         isRepost = False
@@ -351,7 +352,7 @@ def sendPosts(items, last_id):
 
 
 def checkNewPost():
-    isBotChannelAdmin()
+    isBotChannelAdmin(bot, config.tgChannel)
     addLog('i', '[VK] Started scanning for new posts')
     with open('last_known_id.txt', 'r') as file:
         last_id = int(file.read())
@@ -417,32 +418,34 @@ def correctTextForMarkdown(text):
 
 
 # method for checking if a bot is a channel administrator
-def isBotChannelAdmin():
+def isBotChannelAdmin(specific_bot, specific_channel):
     try:
-        _ = bot.get_chat_administrators(config.tgChannel)
+        _ = specific_bot.get_chat_administrators(specific_channel)
     except Exception as ex:
-        addLog('e', 'Bot is not channel admin')
+        addLog('e', 'Bot is not channel admin ({!s})\nBot was stopped!'.format(specific_channel))
         exit()
 
 
 def addLog(type, text):
+    if isBotForLog:
+        isBotChannelAdmin(bot_2, config.tgLogChannel)
+    log_message = ''
     if type == 'w':  # WARNING
         log_message = '[WARNING] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
               '| ' + log_message)
         logging.warning(log_message)
-        sendLog(log_message)
     elif type == 'i':  # INFO
         log_message = '[Bot] [Info] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
               '| ' + log_message)
         logging.info(log_message)
-        sendLog(log_message)
     elif type == 'e':  # ERROR
         log_message = '[ERROR] {!s}'.format(text)
         print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
               '| ' + log_message)
         logging.error(log_message)
+    if isBotForLog:
         sendLog(log_message)
 
 
