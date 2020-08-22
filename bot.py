@@ -17,7 +17,7 @@ from telebot import TeleBot, types, apihelper
 
 bot = TeleBot(config.tgBotToken)
 
-if len(config.tgLogChannel) < 6 and config.tgLogChannel != '@' and config.tgLogChannel != '':
+if len(config.tgLogChannel) > 5 and config.tgLogChannel != '@' and config.tgLogChannel != '':
     bot_2 = TeleBot(config.tgBotToken)
     isBotForLog = True
 else:
