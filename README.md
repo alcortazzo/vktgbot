@@ -101,6 +101,7 @@ vkDomain = 'bbbb'
 * `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
   * **If the group is closed you should use your personal access token! [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)**
 * `vkDomain` is the link to vk public `vk.com/>>bbbb<<`
+* `tgLogChannel` link to another channel in telegram if you want to get bot's log message
 #### If Telegram is not available in your country, you should update these variables.
 ```python
 proxyEnable = True
