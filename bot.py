@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.3.3
+# v1.3.4
 
 import os
 import time
@@ -422,11 +422,14 @@ def isBotChannelAdmin(specific_bot, specific_channel):
     try:
         _ = specific_bot.get_chat_administrators(specific_channel)
     except Exception as ex:
+        global isBotForLog
+        isBotForLog = False
         addLog('e', 'Bot is not channel admin ({!s})\nBot was stopped!'.format(specific_channel))
         exit()
 
 
 def addLog(type, text):
+    global isBotForLog
     if isBotForLog:
         isBotChannelAdmin(bot_2, config.tgLogChannel)
     log_message = ''
@@ -450,6 +453,7 @@ def addLog(type, text):
 
 
 def sendLog(log_message):
+    global isBotForLog
     if isBotForLog:
         log_message_temp = '<code>' + log_message + '</code>\ntgChannel = ' + config.tgChannel + '\nvkDomain = <code>' + \
                            config.vkDomain + '</code>'
