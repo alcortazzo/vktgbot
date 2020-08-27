@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.4
+# v1.4.1
 
 import os
 import time
@@ -250,15 +250,19 @@ def sendPosts(items, last_id):
                     video_url = getVideo(item['attachments'][0]['video']['owner_id'],
                                          item['attachments'][0]['video']['id'],
                                          item['attachments'][0]['video']['access_key'])
-                    if not isRepost:
-                        bot.send_message(config.tgChannel, item['text'] + '\n' + video_url)
-                    elif isRepost:
-                        bot.send_message(config.tgChannel,
-                                         '[ ](' + urlOfRepost + ')' +
-                                         correctTextForMarkdown(item['text']) + '\n' + video_url +
-                                         '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
-                                         parse_mode='Markdown')
-                    addLog('i', 'Post with video sent [post id:{!s}]'.format(item['id']))
+                    if video_url != None:
+                        if not isRepost:
+                            bot.send_message(config.tgChannel, item['text'] + '\n' + video_url)
+                        elif isRepost:
+                            bot.send_message(config.tgChannel,
+                                             '[ ](' + urlOfRepost + ')' +
+                                             correctTextForMarkdown(item['text']) + '\n' + video_url +
+                                             '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
+                                             parse_mode='Markdown')
+                        addLog('i', 'Post with video sent [post id:{!s}]'.format(item['id']))
+                    else:
+                        addLog('w', 'Post with video was skipped. Maybe you do not use personal token' +
+                               ' or video in post is not from YouTube [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
                     if not config.parseLink:
@@ -453,9 +457,12 @@ def sendLog(log_message):
 
 
 def getVideo(owner_id, video_id, access_key):
-    data = requests.get(
-        f'https://api.vk.com/method/video.get?access_token={config.vkToken}&v=5.103&videos={owner_id}_{video_id}_{access_key}')
-    return data.json()['response']['items'][0]['files']['external']
+    try:
+        data = requests.get(
+            f'https://api.vk.com/method/video.get?access_token={config.vkToken}&v=5.103&videos={owner_id}_{video_id}_{access_key}')
+        return data.json()['response']['items'][0]['files']['external']
+    except KeyError:
+        return None
 
 
 if __name__ == '__main__':
