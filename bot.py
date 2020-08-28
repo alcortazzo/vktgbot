@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.3.4
+# v1.4.2
 
 import os
 import time
@@ -100,7 +100,6 @@ def sendPosts(items, last_id):
         try:
             if item['attachments'][0]['type'] == 'video':
                 isTypePost = 'video'
-                videoUrlPreview = item['attachments'][0]['video']['image'][-1]['url']
         except Exception as ex:
             addLog('i', 'No videos in the post [post id:{!s}]'.format(item['id']))
 
@@ -248,25 +247,41 @@ def sendPosts(items, last_id):
                         addLog('i', 'Post with video was skipped [post id:{!s}]'.format(item['id']))
                         isPostSent = True
                         continue
-                    howLong = len(item['text'])
-                    # send messages with video preview
-                    if not isRepost:
-                        if howLong <= 1024:
-                            bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
-                        elif howLong > 1024:
+                    video_url = getVideo(item['attachments'][0]['video']['owner_id'],
+                                         item['attachments'][0]['video']['id'],
+                                         item['attachments'][0]['video']['access_key'])
+                    if video_url != None:
+                        if not isRepost:
+                            bot.send_message(config.tgChannel, item['text'] + '\n' + video_url)
+                        elif isRepost:
                             bot.send_message(config.tgChannel,
-                                             '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
+                                             '[ ](' + urlOfRepost + ')' +
+                                             correctTextForMarkdown(item['text']) + '\n' + video_url +
+                                             '\n\n*REPOST ↓*\n\n' + '_' + correctTextForMarkdown(textRepost) + '_',
                                              parse_mode='Markdown')
-                    elif isRepost:
-                        if item['text'] != '':
-                            item_text = correctTextForMarkdown(item['text']) + '\n\n'
-                        elif item['text'] == '':
-                            item_text = ''
-                        bot.send_message(config.tgChannel,
-                                         '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
-                                         '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
-                                         parse_mode='Markdown')
-                    addLog('i', 'Post with video preview sent [post id:{!s}]'.format(item['id']))
+                        addLog('i', 'Post with video sent [post id:{!s}]'.format(item['id']))
+                    else:
+                        addLog('w', 'Post with video was skipped. Maybe you do not use personal token' +
+                               ' or video in post is not from YouTube [post id:{!s}]'.format(item['id']))
+                        videoUrlPreview = item['attachments'][0]['video']['image'][-1]['url']
+                        howLong = len(item['text'])
+                        if not isRepost:
+                            if howLong <= 1024:
+                                bot.send_photo(config.tgChannel, videoUrlPreview, item['text'])
+                            elif howLong > 1024:
+                                bot.send_message(config.tgChannel,
+                                                 '[ ](' + videoUrlPreview + ')' + correctTextForMarkdown(item['text']),
+                                                 parse_mode='Markdown')
+                        elif isRepost:
+                            if item['text'] != '':
+                                item_text = correctTextForMarkdown(item['text']) + '\n\n'
+                            elif item['text'] == '':
+                                item_text = ''
+                            bot.send_message(config.tgChannel,
+                                             '[ ](' + urlOfRepost + ')' + '[ ](' + videoUrlPreview + ')' + item_text +
+                                             '*REPOST ↓*\n\n_' + correctTextForMarkdown(textRepost) + '_',
+                                             parse_mode='Markdown')
+                        addLog('i', 'Post with video preview sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
                     if not config.parseLink:
@@ -458,6 +473,15 @@ def sendLog(log_message):
         log_message_temp = '<code>' + log_message + '</code>\ntgChannel = ' + config.tgChannel + '\nvkDomain = <code>' + \
                            config.vkDomain + '</code>'
         bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode='HTML')
+
+
+def getVideo(owner_id, video_id, access_key):
+    try:
+        data = requests.get(
+            f'https://api.vk.com/method/video.get?access_token={config.vkToken}&v=5.103&videos={owner_id}_{video_id}_{access_key}')
+        return data.json()['response']['items'][0]['files']['external']
+    except KeyError:
+        return None
 
 
 if __name__ == '__main__':

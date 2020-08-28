@@ -27,7 +27,7 @@
 |Text post|**Yes**|Text post
 |Text post with photo / gif|**Yes**|Text post with photo / gif
 |Text post with links|**Yes** |Text post with links
-|Text post with (yt/vk) video|**50/50**|Text post with video preview > **VK-API restrictions**
+|Text post with (yt/vk) video|**Yes**|Text post with link to video
 |Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
 |Text post with document|**Yes**|Text post with document|
 |VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
@@ -46,7 +46,7 @@ skipAdsPosts = True
  * sendPosts() checks post type and
    * if the post type is just text, it sends one text message to telegram
    * if the post type is text with photos, it sends message with photos to telegram
-   * if the post type is text with **youtube (or vk) video**, it sends message with **video preview** to telegram (because vk_api does not support youtube video links) 
+   * if the post type is text with **youtube (or vk) video**, it sends message with **link to video** to telegram
    * if the post type is text with audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
 * Then bot waits for the period set by the user and starts again
 
@@ -98,8 +98,8 @@ vkDomain = 'bbbb'
 ```
 * `tgChannel` is the link to channel in telegram `t.me/>>aaaa<<`. **You must add bot to this channel as an administrator**
 * `tgBotToken` is the bot token from [BotFather](t.me/BotFather)
-* `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
-  * **If the group is closed you should use your personal access token! [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)**
+* `vkToken` is your vk **personal** token. [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)
+  * **You can just use the vk service token** ([HowToGet](https://youtu.be/oGS683RYmg8)), but if you want to repost posts from closed groups or want to repost posts with YouTube videos use personal token.
 * `vkDomain` is the link to vk public `vk.com/>>bbbb<<`
 * `tgLogChannel` link to another channel in telegram if you want to get bot's log message
 #### If Telegram is not available in your country, you should update these variables.
