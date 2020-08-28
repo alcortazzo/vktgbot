@@ -98,8 +98,8 @@ vkDomain = 'bbbb'
 ```
 * `tgChannel` is the link to channel in telegram `t.me/>>aaaa<<`. **You must add bot to this channel as an administrator**
 * `tgBotToken` is the bot token from [BotFather](t.me/BotFather)
-* `vkToken` is vk service token. [HowToGet](https://youtu.be/oGS683RYmg8)
-  * **If the group is closed you should use your personal access token! [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)**
+* `vkToken` is your vk **personal** token. [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)
+  * **You can just use the vk service token** ([HowToGet](https://youtu.be/oGS683RYmg8)), but if you want to repost posts from closed groups or want to repost posts with YouTube videos use personal token.
 * `vkDomain` is the link to vk public `vk.com/>>bbbb<<`
 * `tgLogChannel` link to another channel in telegram if you want to get bot's log message
 #### If Telegram is not available in your country, you should update these variables.
