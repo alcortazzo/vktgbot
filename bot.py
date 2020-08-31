@@ -430,19 +430,6 @@ def cleaning(when):
         addLog('e', 'Something [{!s}] went wrong in cleaning(): {!s}'.format(type(ex).__name__, str(ex)))
 
 
-# If the markdown parser finds an opening markdown symbol without the corresponding closing one, it throws an error
-# So if in the text an odd number of symbols '*' or '_' correctTextForMarkdown will delete them
-# https://github.com/python-telegram-bot/python-telegram-bot/issues/131#issuecomment-167003086
-# def correctTextForMarkdown(text):
-#     symbols = []
-#     if text.count('*') % 2 != 0:
-#         symbols.append('*')
-#     if text.count('_') % 2 != 0:
-#         symbols.append('_')
-#     niceText = ''.join([a for a in text if a not in symbols])
-#     return niceText
-
-
 # method for checking if a bot is a channel administrator
 def isBotChannelAdmin(specific_bot, specific_channel):
     try:
@@ -482,7 +469,7 @@ def sendLog(log_message):
     global isBotForLog
     if isBotForLog:
         try:
-            log_message_temp = '<code>' + log_message + '</code>\ntgChannel = ' + config.tgChannel +\
+            log_message_temp = '<code>' + log_message + '</code>\ntgChannel = ' + config.tgChannel + \
                                '\nvkDomain = <code>' + config.vkDomain + '</code>'
             bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode='HTML')
         except Exception as ex:
@@ -497,7 +484,7 @@ def getVideo(owner_id, video_id, access_key):
         data = requests.get(
             f'https://api.vk.com/method/video.get?access_token={config.vkToken}&v=5.103&videos={owner_id}_{video_id}_{access_key}')
         return data.json()['response']['items'][0]['files']['external']
-    except KeyError:
+    except Exception:
         return None
 
 
