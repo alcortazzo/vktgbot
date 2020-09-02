@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.4.3
+# v1.4.4
 
 import os
 import time
@@ -260,6 +260,8 @@ def sendPosts(items, last_id):
                                               video['video']['access_key'])
                         if video_temp == None:
                             continue
+                        elif video_temp != None:
+                            time.sleep(2)  # wait for a few seconds because VK can deactivate the token
                         video_url.append(video_temp)
                     if video_temp != None:
                         if not isRepost:
