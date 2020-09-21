@@ -64,7 +64,7 @@ $ cd vktgbot
 # install the requirements
 $ python3 -m pip install -r requirements.txt
 ```
-Or launch it in [docker](#Docker)
+Or launch it in [docker](#docker-58mb)
 ### Windows
  **If you want to use git**
 ```bash
