@@ -254,7 +254,7 @@ def sendPosts(items, last_id):
                         videos = item['attachments']
                     if isRepost:
                         videos = item['copy_history'][0]['attachments']
-                    for video in videos:
+                    for video in filter(lambda att: att['type'] == 'video', videos):
                         video_temp = getVideo(video['video']['owner_id'],
                                               video['video']['id'],
                                               video['video']['access_key'])
