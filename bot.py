@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v1.4.4
+# v1.5
 
 import os
 import time
@@ -61,6 +61,9 @@ def getData():
 
 def sendPosts(items, last_id):
     for item in items:
+        if blacklist_check(item['text']):
+            addLog('i', 'Post was skipped due to blacklist filter [post id:{!s}]'.format(item['id']))
+            continue
         addLog('i', 'Post id: {!s}'.format(item['id']))
         cleaning('before')
         isTypePost = 'post'
@@ -133,6 +136,9 @@ def sendPosts(items, last_id):
                 isRepost = True
                 if item['copy_history'][0]['text'] != '':
                     textRepost = item['copy_history'][0]['text']
+                    if blacklist_check(textRepost):
+                        addLog('i', 'Post was skipped due to blacklist filter [post id:{!s}]'.format(item['id']))
+                        continue
                 else:
                     textRepost = ''
                 urlOfRepost = ''
@@ -298,6 +304,9 @@ def sendPosts(items, last_id):
                         addLog('i', 'Post with video preview sent [post id:{!s}]'.format(item['id']))
 
                 elif isTypePost == 'link':
+                    if blacklist_check(linkurl):
+                        addLog('i', 'Post was skipped due to blacklist filter [post id:{!s}]'.format(item['id']))
+                        continue
                     if not config.parseLink:
                         addLog('i', 'Post with links was skipped [post id:{!s}]'.format(item['id']))
                         isPostSent = True
@@ -488,6 +497,17 @@ def getVideo(owner_id, video_id, access_key):
         return data.json()['response']['items'][0]['files']['external']
     except Exception:
         return None
+
+
+def blacklist_check(text):
+    # global isBlackWord
+    isBlackWord = False
+    if config.BLACKLIST != [] and config.BLACKLIST != [''] and config.BLACKLIST != [' ']:
+        for black_word in config.BLACKLIST:
+            if black_word.lower() in text.lower():
+                isBlackWord = True
+    if isBlackWord:
+        return True
 
 
 if __name__ == '__main__':
