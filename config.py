@@ -14,7 +14,7 @@ tgLogChannel = '@cccc'  # link to another channel in telegram if you want to get
                         # yes, you can use the same bot as for the main task
 
 reqVer = 5.103  # version of VK API [wall.get method]
-reqCount = 2  # number of posts to return (2 - 100)
+reqCount = 3  # number of posts to return (2 - 100)
 reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; others — posts by someone else;
                      # all — posts by the wall owner and others (default)
                      # postponed — timed posts (only available for calls with an access_token)
