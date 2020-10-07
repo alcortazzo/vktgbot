@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+ShouldBotLog = True  # If False bot will not create and keep bot.log file
 BLACKLIST = ['']  # You can add words to the blacklist. If a post contains a blacklisted word, the post will be skipped
 # BLACKLIST = ['ExAmPlE', 'etc', '123456789'] <== That's an example. But be careful. Do not add just one symbol to the list.
 
