@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta1
+# v2.0-beta2
 
 import os
 import sys
@@ -80,6 +80,7 @@ def sendPosts(items, last_id):
             tries = 5  # attempts to send a message to telegram
             isPostSent = False
             isTypePost = get_type_of_post()
+            global isRepost
             isRepost = check_for_repost()
             for attempt in range(tries + 1):
                 try:
@@ -113,24 +114,6 @@ def sendPosts(items, last_id):
             try:
                 if item['attachments'][0]['type'] == 'photo':
                     isTypePost = 'photo'
-                    photos = item['attachments']
-                    urlsPhoto = []
-                    # check the size of the photo and add this photo to the URL list
-                    # (from large to smaller)
-                    # photo with type W > Z > *
-                    for photo in photos:
-                        urls = photo['photo']['sizes']
-                        if urls[-1]['type'] == 'z':
-                            for url in urls:
-                                if url['type'] == 'w':
-                                    urlsPhoto.append(url['url'])
-                                    break
-                                elif url['type'] == 'z':
-                                    urlsPhoto.append(url['url'])
-                                    break
-                        # if we did not find 'w' or 'z', we take the largest available
-                        elif urls[-1]['type'] != 'z':
-                            urlsPhoto.append(urls[-1]['url'])
             except Exception as ex:
                 addLog('i', f"No photos in the post [post id:{item['id']}")
 
@@ -143,24 +126,12 @@ def sendPosts(items, last_id):
             try:
                 if item['attachments'][0]['type'] == 'link':
                     isTypePost = 'link'
-                    linkurl = item['attachments'][0]['link']['url']
             except Exception as ex:
                 addLog('i', f"No links in the post [post id:{item['id']}]")
 
             try:
                 if item['attachments'][0]['type'] == 'doc':
                     isTypePost = 'doc'
-                    docurl = item['attachments'][0]['doc']['url']
-                    if item['attachments'][0]['doc']['ext'] == 'gif':
-                        doc_is = 'gif'
-                        docurl_gif = urllib.request.urlopen(docurl).read()
-                    else:
-                        doc_is = 'doc'
-                        doc_title = item['attachments'][0]['doc']['title']
-                        docurl_img = urllib.request.urlopen(docurl).read()
-                        with open(os.path.join('temp', doc_title), 'wb') as temp_file:
-                            temp_file.write(docurl_img)
-                            temp_file.close()
             except Exception as ex:
                 addLog(
                     'i', f"No documents/gifs in the post [post id:{item['id']}]")
@@ -172,14 +143,16 @@ def sendPosts(items, last_id):
             try:
                 if 'copy_history' in item:
                     isRepost = True
+                    global textRepost
                     if item['copy_history'][0]['text'] != '':
                         textRepost = item['copy_history'][0]['text']
                         if blacklist_check(textRepost):
                             addLog(
                                 'i', f"Post was skipped due to blacklist filter [post id:{item['id']}]")
-                            return False
+                            isRepost = False
                     else:
                         textRepost = ''
+                    global urlOfRepost
                     urlOfRepost = ''
                     try:
                         if item['copy_history'][0]['attachments'][0]['type'] == 'photo':
@@ -204,6 +177,7 @@ def sendPosts(items, last_id):
             except Exception as ex:
                 addLog(
                     'e', f"{type(ex).__name__} in sendPosts() (RepostCheck) [post id:{item['id']}]: {str(ex)}")
+                return isRepost
 
         def send_post_post():
             try:
@@ -235,6 +209,28 @@ def sendPosts(items, last_id):
                 return False
 
         def send_post_photo():
+            try:
+                photos = item['attachments']
+                urlsPhoto = []
+                # check the size of the photo and add this photo to the URL list
+                # (from large to smaller)
+                # photo with type W > Z > *
+                for photo in photos:
+                    urls = photo['photo']['sizes']
+                    if urls[-1]['type'] == 'z':
+                        for url in urls:
+                            if url['type'] == 'w':
+                                urlsPhoto.append(url['url'])
+                                break
+                            elif url['type'] == 'z':
+                                urlsPhoto.append(url['url'])
+                                break
+                    # if we did not find 'w' or 'z', we take the largest available
+                    elif urls[-1]['type'] != 'z':
+                        urlsPhoto.append(urls[-1]['url'])
+            except Exception as ex:
+                addLog('i', f"No photos in the post [post id:{item['id']}]")
+
             try:
                 if not config.parsePhoto:
                     addLog(
@@ -386,6 +382,8 @@ def sendPosts(items, last_id):
 
         def send_post_link():
             try:
+                linkurl = item['attachments'][0]['link']['url']
+
                 if blacklist_check(linkurl):
                     addLog(
                         'i', f"Post was skipped due to blacklist filter [post id:{item['id']}]")
@@ -421,6 +419,18 @@ def sendPosts(items, last_id):
 
         def send_post_doc():
             try:
+                docurl = item['attachments'][0]['doc']['url']
+                if item['attachments'][0]['doc']['ext'] == 'gif':
+                    doc_is = 'gif'
+                    docurl_gif = urllib.request.urlopen(docurl).read()
+                else:
+                    doc_is = 'doc'
+                    doc_title = item['attachments'][0]['doc']['title']
+                    docurl_img = urllib.request.urlopen(docurl).read()
+                    with open(os.path.join('temp', doc_title), 'wb') as temp_file:
+                        temp_file.write(docurl_img)
+                        temp_file.close()
+
                 if not config.parseDoc:
                     addLog(
                         'i', f"Post with docs/gif was skipped [post id:{item['id']}]")
