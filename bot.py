@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta2
+# v2.0-beta3
 
 import os
 import sys
@@ -13,6 +13,7 @@ import shutil
 import logging
 import requests
 import eventlet
+from PIL import Image
 from datetime import datetime
 from telebot import TeleBot, types, apihelper
 
@@ -77,7 +78,7 @@ def sendPosts(items, last_id):
 
         def send_post_start():
             # send message according to post type
-            tries = 5  # attempts to send a message to telegram
+            tries = 3  # attempts to send a message to telegram
             isPostSent = False
             isTypePost = get_type_of_post()
             global isRepost
@@ -209,6 +210,12 @@ def sendPosts(items, last_id):
                 return False
 
         def send_post_photo():
+            if not config.parsePhoto:
+                addLog(
+                    'i', f"Post with photos was skipped [post id:{item['id']}]")
+                isPostSent = True
+                return True
+            
             try:
                 photos = item['attachments']
                 urlsPhoto = []
@@ -216,6 +223,8 @@ def sendPosts(items, last_id):
                 # (from large to smaller)
                 # photo with type W > Z > *
                 for photo in photos:
+                    if photo['type'] != 'photo':
+                        continue
                     urls = photo['photo']['sizes']
                     if urls[-1]['type'] == 'z':
                         for url in urls:
@@ -232,11 +241,6 @@ def sendPosts(items, last_id):
                 addLog('i', f"No photos in the post [post id:{item['id']}]")
 
             try:
-                if not config.parsePhoto:
-                    addLog(
-                        'i', f"Post with photos was skipped [post id:{item['id']}]")
-                    isPostSent = True
-                    return True
                 howLong = len(item['text'])
                 listOfPhotos = []
                 # send messages with photos
@@ -298,7 +302,7 @@ def sendPosts(items, last_id):
                                          item_text + '<b>REPOST ↓</b>\n\n<i>' + textRepost + '</i>',
                                          parse_mode='HTML')
                     addLog('i', f"Post with photo sent [post id:{item['id']}]")
-                    return True
+                return True
             except Exception as ex:
                 if type(ex).__name__ == 'ConnectionError':
                     addLog(
@@ -406,6 +410,7 @@ def sendPosts(items, last_id):
                                      '\n\n<b>REPOST ↓</b>\n\n' + '<i>' + textRepost + '</i>',
                                      parse_mode='HTML')
                 addLog('i', f"Text post with link sent [post id:{item['id']}]")
+                return True
             except Exception as ex:
                 if type(ex).__name__ == 'ConnectionError':
                     addLog(
@@ -419,6 +424,11 @@ def sendPosts(items, last_id):
 
         def send_post_doc():
             try:
+                if not config.parseDoc:
+                    addLog(
+                        'i', f"Post with docs/gif was skipped [post id:{item['id']}]")
+                    return True
+                
                 docurl = item['attachments'][0]['doc']['url']
                 if item['attachments'][0]['doc']['ext'] == 'gif':
                     doc_is = 'gif'
@@ -430,11 +440,6 @@ def sendPosts(items, last_id):
                     with open(os.path.join('temp', doc_title), 'wb') as temp_file:
                         temp_file.write(docurl_img)
                         temp_file.close()
-
-                if not config.parseDoc:
-                    addLog(
-                        'i', f"Post with docs/gif was skipped [post id:{item['id']}]")
-                    return True
 
                 howLong = len(item['text'])
                 if not isRepost:
