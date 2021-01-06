@@ -26,11 +26,12 @@ timeSleep = 60 * 2  # time in seconds
 isPinned = False
 skipAdsPosts = True
 
-parsePost = True  # bot will skip just text posts if the value is False
-parsePhoto = True  # bot will skip photo posts if the value is False
-parseVideo = True  # bot will skip video posts if the value is False
-parseLink = True  # bot will skip posts with link if the value is False
-parseDoc = True  # bot will skip posts with docs/gif if the value is False
+#parsePost = True   # bot will skip just text posts if the value is False
+#parsePhoto = True  # bot will skip photo posts if the value is False
+#parseVideo = True  # bot will skip video posts if the value is False
+#parseLink = True   # bot will skip posts with link if the value is False
+#parseDoc = True    # bot will skip posts with docs if the value is False
+#parseGif = True    # bot will skip posts with gifs if the value is False
 
 proxyEnable = False  # Set True if telegram is not available in your country
 proxyLogin = "bot"  # Login for Socks5 proxy
