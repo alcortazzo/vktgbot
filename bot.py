@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta4
+# v2.0-beta5
 
 import os
 import sys
@@ -90,13 +90,14 @@ def parsePosts(items, last_id):
                 addLog(
                     'i', f"Post was skipped due to blacklist filter [post id:{item['id']}]")
                 #return True
-#            if not config.parseLink:
-#                addLog(
-#                    'i', f"Post with links was skipped [post id:{item['id']}]")
-#                #return True
+            #if not config.parseLink:
+            #    addLog(
+            #        'i', f"Post with links was skipped [post id:{item['id']}]")
+            #    #return True
             
             if link_object not in textOfPost:
-                links_list.append(link_object)
+                return link_object
+            
         
         def getVideo(attachment):
             def getVideoUrl(owner_id, video_id, access_key):
@@ -107,25 +108,25 @@ def parsePosts(items, last_id):
                 except Exception:
                     return None
             
-#            if not config.parseVideo:
-#                addLog(
-#                    'i', f"Post with video was skipped [post id:{item['id']}]")
-#                #return True
+            #if not config.parseVideo:
+            #    addLog(
+            #        'i', f"Post with video was skipped [post id:{item['id']}]")
+            #    #return True
             
-            # wait for a few seconds because VK can deactivate the access token due to frequent requests
-            time.sleep(2)
             video = getVideoUrl(attachment['video']['owner_id'],
                             attachment['video']['id'],
                             attachment['video']['access_key'])
+            # wait for a few seconds because VK can deactivate the access token due to frequent requests
+            time.sleep(2)
             if video != None:
-                videos_list.append(video)
+                return video
         
         def getPhoto(attachment):
-#            if not config.parsePhoto:
-#                addLog(
-#                    'i', f"Post with photos was skipped [post id:{item['id']}]")
-#                isPostSent = True
-#                #return True
+            #if not config.parsePhoto:
+            #    addLog(
+            #        'i', f"Post with photos was skipped [post id:{item['id']}]")
+            #    isPostSent = True
+            #    #return True
             
             # check the size of the photo and add this photo to the URL list
             # (from large to smaller)
@@ -134,20 +135,18 @@ def parsePosts(items, last_id):
             if photo[-1]['type'] == 'z':
                 for url in photo:
                     if url['type'] == 'w':
-                        photo_url_list.append(url['url'])
-                        break
+                        return url['url']
                     elif url['type'] == 'z':
-                        photo_url_list.append(url['url'])
-                        break
+                        return url['url']
             # if we did not find 'w' or 'z', we take the largest available
             elif photo[-1]['type'] != 'z':
-                photo_url_list.append(photo[-1]['url'])
-        
+                return photo[-1]['url']
+        '''
         def getDoc(attachment): 
-#            if not config.parseDoc:
-#                addLog(
-#                    'i', f"Post with docs was skipped [post id:{item['id']}]")
-#                #return True
+            #if not config.parseDoc:
+            #    addLog(
+            #        'i', f"Post with docs was skipped [post id:{item['id']}]")
+            #    #return True
             
             docurl = attachment['doc']['url']
             extension = attachment['doc']['ext']
@@ -162,50 +161,82 @@ def parsePosts(items, last_id):
             docs_exist = True
         
         def getGif(attachment):
-#            if not config.parseGif:
-#                addLog(
-#                    'i', f"Post with gif was skipped [post id:{item['id']}]")
-#                #return True
+            #if not config.parseGif:
+            #    addLog(
+            #        'i', f"Post with gif was skipped [post id:{item['id']}]")
+            #    #return True
             
             docurl = attachment['doc']['url']
             extension = attachment['doc']['ext']
             gif_link = urllib.request.urlopen(docurl).read()
+        '''
         
-        for attachment in item['attachments']:
-            if attachment['type'] == 'link':
-                getLink(attachment)
-            elif attachment['type'] == 'video':
-                getVideo(attachment)
-            elif attachment['type'] == 'photo':
-                getPhoto(attachment)
-#           elif attachment['type'] == 'doc':           doesnt work for now
-#               if attachment['doc']['ext'] == 'gif':   doesnt work for now
-#                   getGif(attachment)                  doesnt work for now
-#               else:                                   doesnt work for now
-#                   getDoc(attachment)                  doesnt work for now
-        
-        
-        textOfPost = compileLinksAndText(textOfPost, links_list, videos_list)
-        sendPosts(textOfPost, photo_url_list, docs_exist, gif_link)
+        def parseAttachments(item, linklist, vidlist, photolist):
+            for attachment in item['attachments']:
+                if attachment['type'] == 'link':
+                    linklist.append(getLink(attachment))
+                elif attachment['type'] == 'video':
+                    temp_vid = getVideo(attachment)
+                    if temp_vid != None:
+                        vidlist.append(temp_vid)
+                elif attachment['type'] == 'photo':
+                    photolist.append(getPhoto(attachment))
+                '''
+                elif attachment['type'] == 'doc':
+                    if attachment['doc']['ext'] == 'gif':
+                        getGif(attachment)
+                    else:
+                        getDoc(attachment)
+                '''
+                
+        parseAttachments(item, links_list, videos_list, photo_url_list)
+        textOfPost = compileLinksAndText(textOfPost, links_list, videos_list, 'post')
+        if 'copy_history' in item:
+            textOfPost = f'''{textOfPost}\n\nREPOST ↓'''
+        sendPosts(textOfPost, photo_url_list, docs_exist, gif_link, 'post')
         cleaning('after')
+        
+        if 'copy_history' in item:
+            cleaning('before')
+            item_repost = item['copy_history'][0]
+            link_to_reposted_post = f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
+            textOfPost_rep = item_repost['text']
+            links_list_rep = []
+            videos_list_rep = []
+            photo_url_list_rep = []
+            docs_exist_rep = False
+            gif_link_rep = ''
+            parseAttachments(item_repost, links_list_rep, videos_list_rep, photo_url_list_rep)
+            textOfPost_rep = compileLinksAndText(textOfPost_rep, links_list_rep, videos_list_rep, 'repost', link_to_reposted_post)
+            sendPosts(textOfPost_rep, photo_url_list_rep, docs_exist_rep, gif_link_rep, 'repost')
+            cleaning('after')
 
-def sendPosts(textOfPost, photo_url_list, docs_exist, gif_link):
+
+def sendPosts(textOfPost, photo_url_list, docs_exist, gif_link, *repost):
     def startSending():
         if len(photo_url_list) == 0:
-            sendTextPost()
+            if repost[0] == 'post':
+                sendTextPost('post')
+            elif repost[0] == 'repost':
+                sendTextPost('repost')
         elif len(photo_url_list) == 1:
             sendPhotoPost()
         elif len(photo_url_list) >= 2:
             sendPhotosPost()
 
-    # поставить try except
-
-    def sendTextPost():
-        if len(textOfPost) < 4096:
-            bot.send_message(config.tgChannel, textOfPost)
-        else:
-            bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)')
-            bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}')
+    def sendTextPost(type_of_post):
+        if type_of_post == 'post':
+            if len(textOfPost) < 4096:
+                bot.send_message(config.tgChannel, textOfPost)
+            else:
+                bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)')
+                bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}')
+        elif type_of_post == 'repost':
+            if len(textOfPost) < 4096:
+                bot.send_message(config.tgChannel, textOfPost, parse_mode='HTML', disable_web_page_preview=True)
+            else:
+                bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)', parse_mode='HTML', disable_web_page_preview=True)
+                bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}', parse_mode='HTML', disable_web_page_preview=True)
     
     def sendPhotoPost():
         if len(textOfPost) <= 1024:
@@ -237,12 +268,12 @@ def sendPosts(textOfPost, photo_url_list, docs_exist, gif_link):
     startSending()
 
 
-def compileLinksAndText(textOfPost, links_list, videos_list):
+def compileLinksAndText(textOfPost, links_list, videos_list, *repost):
     first_link = True
     def addVideo():
         nonlocal first_link
         nonlocal textOfPost
-        if videos_list != []:
+        if videos_list != [] and videos_list != [None]:
             for video in videos_list:
                 if video not in textOfPost:
                     if first_link:
@@ -254,7 +285,7 @@ def compileLinksAndText(textOfPost, links_list, videos_list):
     def addLink():
         nonlocal first_link
         nonlocal textOfPost
-        if links_list != []:
+        if links_list != [] and links_list != [None]:
             for link in links_list:
                 if link not in textOfPost:
                     if first_link:
@@ -265,6 +296,8 @@ def compileLinksAndText(textOfPost, links_list, videos_list):
                         
     addVideo()
     addLink()
+    if repost[0] == 'repost':
+        textOfPost = f'<a href="{repost[1]}"><b>REPOST ↓</b></a>\n\n<i>{textOfPost}</i>'
     return textOfPost
 
 def checkNewPost():
