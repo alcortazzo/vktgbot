@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta5
+# v2.0-beta6
 
 import os
 import sys
@@ -64,40 +64,30 @@ def getData():
 def parsePosts(items, last_id):
     for item in items:
         if blacklist_check(item['text']):
-            addLog(
-                'i', f"Post was skipped due to blacklist filter [post id:{item['id']}]")
+            addLog('i', f"[Post id:{item['id']}] Post was skipped due to blacklist filter")
             continue
-        addLog('i', f"Post id: {item['id']}")
+        addLog('i', f"[Post id:{item['id']}] Bot is working with this post")
 
         cleaning('before')
         
         if item['id'] <= last_id:
             break
         if config.skipAdsPosts and item['marked_as_ads'] == 1:
+            addLog('i', f'Post')
             continue
-
-        textOfPost = item['text']
-        links_list = []
-        videos_list = []
-        photo_url_list = []
-        docs_exist = False
-        gif_link = ''
         
         def getLink(attachment):
-            link_object = attachment['link']['url']
-            
-            if blacklist_check(link_object):
-                addLog(
-                    'i', f"Post was skipped due to blacklist filter [post id:{item['id']}]")
-                #return True
-            #if not config.parseLink:
-            #    addLog(
-            #        'i', f"Post with links was skipped [post id:{item['id']}]")
-            #    #return True
-            
-            if link_object not in textOfPost:
-                return link_object
-            
+            try:
+                link_object = attachment['link']['url']
+
+                if blacklist_check(link_object):
+                    addLog('i', f"[Post id:{item['id']}] Post was skipped due to blacklist filter")
+
+                if link_object not in textOfPost:
+                    return link_object
+            except Exception as ex:
+                addLog('e', f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getLink(): {str(ex)}')
+
         
         def getVideo(attachment):
             def getVideoUrl(owner_id, video_id, access_key):
@@ -107,47 +97,38 @@ def parsePosts(items, last_id):
                     return data.json()['response']['items'][0]['files']['external']
                 except Exception:
                     return None
-            
-            #if not config.parseVideo:
-            #    addLog(
-            #        'i', f"Post with video was skipped [post id:{item['id']}]")
-            #    #return True
-            
-            video = getVideoUrl(attachment['video']['owner_id'],
-                            attachment['video']['id'],
-                            attachment['video']['access_key'])
-            # wait for a few seconds because VK can deactivate the access token due to frequent requests
-            time.sleep(2)
-            if video != None:
-                return video
+
+            try:
+                video = getVideoUrl(attachment['video']['owner_id'],
+                                attachment['video']['id'],
+                                attachment['video']['access_key'])
+                # wait for a few seconds because VK can deactivate the access token due to frequent requests
+                time.sleep(2)
+                if video != None:
+                    return video
+            except Exception as ex:
+                addLog('e', f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getVideo(): {str(ex)}')
         
         def getPhoto(attachment):
-            #if not config.parsePhoto:
-            #    addLog(
-            #        'i', f"Post with photos was skipped [post id:{item['id']}]")
-            #    isPostSent = True
-            #    #return True
-            
-            # check the size of the photo and add this photo to the URL list
-            # (from large to smaller)
-            # photo with type W > Z > *
-            photo = attachment['photo']['sizes']
-            if photo[-1]['type'] == 'z':
-                for url in photo:
-                    if url['type'] == 'w':
-                        return url['url']
-                    elif url['type'] == 'z':
-                        return url['url']
-            # if we did not find 'w' or 'z', we take the largest available
-            elif photo[-1]['type'] != 'z':
-                return photo[-1]['url']
+            try:
+                # check the size of the photo and add this photo to the URL list
+                # (from large to smaller)
+                # photo with type W > Z > *
+                photo = attachment['photo']['sizes']
+                if photo[-1]['type'] == 'z':
+                    for url in photo:
+                        if url['type'] == 'w':
+                            return url['url']
+                        elif url['type'] == 'z':
+                            return url['url']
+                # if we did not find 'w' or 'z', we take the largest available
+                elif photo[-1]['type'] != 'z':
+                    return photo[-1]['url']
+            except Exception as ex:
+                addLog('e', f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getPhoto(): {str(ex)}')
+
         '''
-        def getDoc(attachment): 
-            #if not config.parseDoc:
-            #    addLog(
-            #        'i', f"Post with docs was skipped [post id:{item['id']}]")
-            #    #return True
-            
+        def getDoc(attachment):
             docurl = attachment['doc']['url']
             extension = attachment['doc']['ext']
             doc_title = attachment['doc']['title']
@@ -161,139 +142,191 @@ def parsePosts(items, last_id):
             docs_exist = True
         
         def getGif(attachment):
-            #if not config.parseGif:
-            #    addLog(
-            #        'i', f"Post with gif was skipped [post id:{item['id']}]")
-            #    #return True
-            
             docurl = attachment['doc']['url']
             extension = attachment['doc']['ext']
             gif_link = urllib.request.urlopen(docurl).read()
         '''
         
         def parseAttachments(item, linklist, vidlist, photolist):
-            for attachment in item['attachments']:
-                if attachment['type'] == 'link':
-                    linklist.append(getLink(attachment))
-                elif attachment['type'] == 'video':
-                    temp_vid = getVideo(attachment)
-                    if temp_vid != None:
-                        vidlist.append(temp_vid)
-                elif attachment['type'] == 'photo':
-                    photolist.append(getPhoto(attachment))
-                '''
-                elif attachment['type'] == 'doc':
-                    if attachment['doc']['ext'] == 'gif':
-                        getGif(attachment)
-                    else:
-                        getDoc(attachment)
-                '''
-                
-        parseAttachments(item, links_list, videos_list, photo_url_list)
-        textOfPost = compileLinksAndText(textOfPost, links_list, videos_list, 'post')
-        if 'copy_history' in item:
-            textOfPost = f'''{textOfPost}\n\nREPOST ↓'''
-        sendPosts(textOfPost, photo_url_list, docs_exist, gif_link, 'post')
-        cleaning('after')
+            try:
+                for attachment in item['attachments']:
+                    if attachment['type'] == 'link':
+                        linklist.append(getLink(attachment))
+                    elif attachment['type'] == 'video':
+                        temp_vid = getVideo(attachment)
+                        if temp_vid != None:
+                            vidlist.append(temp_vid)
+                    elif attachment['type'] == 'photo':
+                        photolist.append(getPhoto(attachment))
+                    '''
+                    elif attachment['type'] == 'doc':
+                        if attachment['doc']['ext'] == 'gif':
+                            getGif(attachment)
+                        else:
+                            getDoc(attachment)
+                    '''
+            except Exception as ex:
+                addLog('e', f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> parseAttachments(): {str(ex)}')
         
-        if 'copy_history' in item:
-            cleaning('before')
-            item_repost = item['copy_history'][0]
-            link_to_reposted_post = f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
-            textOfPost_rep = item_repost['text']
-            links_list_rep = []
-            videos_list_rep = []
-            photo_url_list_rep = []
-            docs_exist_rep = False
-            gif_link_rep = ''
-            parseAttachments(item_repost, links_list_rep, videos_list_rep, photo_url_list_rep)
-            textOfPost_rep = compileLinksAndText(textOfPost_rep, links_list_rep, videos_list_rep, 'repost', link_to_reposted_post)
-            sendPosts(textOfPost_rep, photo_url_list_rep, docs_exist_rep, gif_link_rep, 'repost')
+        try:
+            textOfPost = item['text']
+            links_list = []
+            videos_list = []
+            photo_url_list = []
+            docs_exist = False
+            gif_link = ''
+            
+            parseAttachments(item, links_list, videos_list, photo_url_list)
+            textOfPost = compileLinksAndText(item['id'], textOfPost, links_list, videos_list, 'post')
+            if 'copy_history' in item:
+                textOfPost = f'''{textOfPost}\n\nREPOST ↓'''
+            sendPosts(item['id'], textOfPost, photo_url_list, docs_exist, gif_link, 'post')
             cleaning('after')
 
+            if 'copy_history' in item:
+                cleaning('before')
+                
+                item_repost = item['copy_history'][0]
+                link_to_reposted_post = f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
+                textOfPost_rep = item_repost['text']
+                links_list_rep = []
+                videos_list_rep = []
+                photo_url_list_rep = []
+                docs_exist_rep = False
+                gif_link_rep = ''
+                
+                parseAttachments(item_repost, links_list_rep, videos_list_rep, photo_url_list_rep)
+                textOfPost_rep = compileLinksAndText(item['id'], textOfPost_rep, links_list_rep, videos_list_rep, 'repost', link_to_reposted_post)
+                sendPosts(item['id'], textOfPost_rep, photo_url_list_rep, docs_exist_rep, gif_link_rep, 'repost')
+                cleaning('after')
+        except Exception as ex:
+            addLog('e', f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts(): {str(ex)}')
 
-def sendPosts(textOfPost, photo_url_list, docs_exist, gif_link, *repost):
+
+def sendPosts(postid, textOfPost, photo_url_list, docs_exist, gif_link, *repost):
     def startSending():
-        if len(photo_url_list) == 0:
-            if repost[0] == 'post':
-                sendTextPost('post')
-            elif repost[0] == 'repost':
-                sendTextPost('repost')
-        elif len(photo_url_list) == 1:
-            sendPhotoPost()
-        elif len(photo_url_list) >= 2:
-            sendPhotosPost()
+        try:
+            if len(photo_url_list) == 0:
+                addLog('i', f"[Post id:{postid}] Bot is trying to send text post")
+                if repost[0] == 'post':
+                    sendTextPost('post')
+                elif repost[0] == 'repost':
+                    sendTextPost('repost')
+            elif len(photo_url_list) == 1:
+                addLog('i', f"[Post id:{postid}] Bot is trying to send post with photo")
+                sendPhotoPost()
+            elif len(photo_url_list) >= 2:
+                addLog('i', f"[Post id:{postid}] Bot is trying to send post with photos")
+                sendPhotosPost()
+        except Exception as ex:
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> startSending(): {str(ex)}')
 
     def sendTextPost(type_of_post):
-        if type_of_post == 'post':
-            if len(textOfPost) < 4096:
-                bot.send_message(config.tgChannel, textOfPost)
-            else:
-                bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)')
-                bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}')
-        elif type_of_post == 'repost':
-            if len(textOfPost) < 4096:
-                bot.send_message(config.tgChannel, textOfPost, parse_mode='HTML', disable_web_page_preview=True)
-            else:
-                bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)', parse_mode='HTML', disable_web_page_preview=True)
-                bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}', parse_mode='HTML', disable_web_page_preview=True)
-    
-    def sendPhotoPost():
-        if len(textOfPost) <= 1024:
-            bot.send_photo(config.tgChannel, photo_url_list[0], textOfPost)
-        else:
-            PostWithPhoto = f'<a href="{photo_url_list[0]}"> </a>{textOfPost}'
-            if len(PostWithPhoto) > 1024 and len(PostWithPhoto) <= 4096:
-                bot.send_message(config.tgChannel, PostWithPhoto, parse_mode='HTML')
-            elif len(PostWithPhoto) > 4096: # если >4096 - делить на два
+        try:
+            if type_of_post == 'post':
                 if len(textOfPost) < 4096:
                     bot.send_message(config.tgChannel, textOfPost)
                 else:
                     bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)')
                     bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}')
-                bot.send_photo(config.tgChannel, photo_url_list[0])
-                
-    def sendPhotosPost():
-        photo_list = []
-        for urlPhoto in photo_url_list:
-            photo_list.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
-        
-        if len(textOfPost) <= 1024 and len(textOfPost) > 0:
-            photo_list[0].caption = textOfPost
-        elif len(textOfPost) > 1024 and len(textOfPost) <= 4096:
-            bot.send_message(config.tgChannel, textOfPost)
-            
-        bot.send_media_group(config.tgChannel, photo_list)
+            elif type_of_post == 'repost':
+                if len(textOfPost) < 4096:
+                    bot.send_message(config.tgChannel, textOfPost, parse_mode='HTML', disable_web_page_preview=True)
+                else:
+                    bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)', parse_mode='HTML', disable_web_page_preview=True)
+                    bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}', parse_mode='HTML', disable_web_page_preview=True)
+            addLog('i', f"[Post id:{postid}] Text post sent")
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                addLog('w', f'[Post id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendTextPost(): {str(ex)}')
+                addLog('i', f'[Post id:{postid}] Bot trying to resend message to user')
+                time.sleep(3)
+                sendTextPost(type_of_post)
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendTextPost(): {str(ex)}')
     
+    def sendPhotoPost():
+        try:
+            if len(textOfPost) <= 1024:
+                bot.send_photo(config.tgChannel, photo_url_list[0], textOfPost)
+                addLog('i', f"[Post id:{postid}] Text post (<=1024) with photo sent")
+            else:
+                PostWithPhoto = f'<a href="{photo_url_list[0]}"> </a>{textOfPost}'
+                if len(PostWithPhoto) > 1024 and len(PostWithPhoto) <= 4096:
+                    bot.send_message(config.tgChannel, PostWithPhoto, parse_mode='HTML')
+                elif len(PostWithPhoto) > 4096: # если >4096 - делить на два
+                    if len(textOfPost) < 4096:
+                        bot.send_message(config.tgChannel, textOfPost)
+                    else:
+                        bot.send_message(config.tgChannel, f'{textOfPost[:4090]} (...)')
+                        bot.send_message(config.tgChannel, f'(...) {textOfPost[4090:]}')
+                    bot.send_photo(config.tgChannel, photo_url_list[0])
+                addLog('i', f"[Post id:{postid}] Text post (>1024) with photo sent")
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                addLog('w', f'[Post id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendPhotoPost(): {str(ex)}')
+                addLog('i', f'[Post id:{postid}] Bot trying to resend message to user')
+                time.sleep(3)
+                sendPhotoPost()
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendPhotoPost(): {str(ex)}')
+
+    def sendPhotosPost():
+        try:
+            photo_list = []
+            for urlPhoto in photo_url_list:
+                photo_list.append(types.InputMediaPhoto(urllib.request.urlopen(urlPhoto).read()))
+
+            if len(textOfPost) <= 1024 and len(textOfPost) > 0:
+                photo_list[0].caption = textOfPost
+            elif len(textOfPost) > 1024 and len(textOfPost) <= 4096:
+                bot.send_message(config.tgChannel, textOfPost)
+
+            bot.send_media_group(config.tgChannel, photo_list)
+            addLog('i', f"[Post id:{postid}] Text post with photos sent")
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                addLog('w', f'[Post id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendPhotosPost(): {str(ex)}')
+                addLog('i', f'[Post id:{postid}] Bot trying to resend message to user')
+                time.sleep(3)
+                sendPhotosPost()
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendPhotosPost(): {str(ex)}')
+
     startSending()
 
 
-def compileLinksAndText(textOfPost, links_list, videos_list, *repost):
+def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
     first_link = True
     def addVideo():
-        nonlocal first_link
-        nonlocal textOfPost
-        if videos_list != [] and videos_list != [None]:
-            for video in videos_list:
-                if video not in textOfPost:
-                    if first_link:
-                        textOfPost += f'\n\n{video}'
-                        first_link = False
-                    elif not first_link:
-                        textOfPost += f'\n{video}'
+        try:
+            nonlocal first_link
+            nonlocal textOfPost
+            if videos_list != [] and videos_list != [None]:
+                for video in videos_list:
+                    if video not in textOfPost:
+                        if first_link:
+                            textOfPost += f'\n\n{video}'
+                            first_link = False
+                        elif not first_link:
+                            textOfPost += f'\n{video}'
+                addLog('i', f"[Post id:{postid}] Link(s) to YouTube video(s) was(were) added to post text")
+        except Exception as ex:
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText() --> addVideo(): {str(ex)}')
     
     def addLink():
-        nonlocal first_link
-        nonlocal textOfPost
-        if links_list != [] and links_list != [None]:
-            for link in links_list:
-                if link not in textOfPost:
-                    if first_link:
-                        textOfPost += f'\n\n{link}'
-                        first_link = False
-                    elif not first_link:
-                        textOfPost += f'\n{link}'
-                        
+        try:
+            nonlocal first_link
+            nonlocal textOfPost
+            if links_list != [] and links_list != [None]:
+                for link in links_list:
+                    if link not in textOfPost:
+                        if first_link:
+                            textOfPost += f'\n\n{link}'
+                            first_link = False
+                        elif not first_link:
+                            textOfPost += f'\n{link}'
+                addLog('i', f"[Post id:{postid}] Link(s) was(were) added to post text")
+        except Exception as ex:
+            addLog('e', f'[Post id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText() --> addLink(): {str(ex)}')
+
     addVideo()
     addLink()
     if repost[0] == 'repost':
@@ -303,7 +336,7 @@ def compileLinksAndText(textOfPost, links_list, videos_list, *repost):
 def checkNewPost():
     if not isBotChannelAdmin(bot, config.tgChannel):
         pass
-    addLog('i', '[VK] Started scanning for new posts')
+    addLog('i', 'Started scanning for new posts')
     with open('last_known_id.txt', 'r') as file:
         last_id = int(file.read())
         if last_id is None:
@@ -312,6 +345,7 @@ def checkNewPost():
         addLog('i', f"Last id of vk post is {last_id}")
     try:
         feed = getData()
+        addLog('i', f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
         # continue if we received data
         if feed is not None:
             entries = feed
@@ -339,7 +373,7 @@ def checkNewPost():
         addLog(
             'e', f'Exception in type {type(ex).__name__} in checkNewPost(): {str(ex)}')
         pass
-    addLog('i', '[VK] Finished scanning')
+    addLog('i', 'Finished scanning')
     return
 
 
