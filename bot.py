@@ -248,7 +248,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_exist, gif_link, *repost)
         try:
             if len(textOfPost) <= 1024:
                 bot.send_photo(config.tgChannel, photo_url_list[0], textOfPost)
-                addLog('i', f"[Post id:{postid}] Text post (<=1024) with photo sent")
+                addLog('i', f"[Post id:{postid}] Text post (≤1024) with photo sent")
             else:
                 PostWithPhoto = f'<a href="{photo_url_list[0]}"> </a>{textOfPost}'
                 if len(PostWithPhoto) > 1024 and len(PostWithPhoto) <= 4096:
