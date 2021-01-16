@@ -13,6 +13,7 @@ vkDomain = 'bbbb'  # domain of vk channel (vk.com/>>>>aaaaaaaa<<<<)
 tgLogChannel = '@cccc'  # link to another channel in telegram if you want to get bot's log message
                         # !!! you must add bot to this channel as an administrator
                         # yes, you can use the same bot as for the main task
+tgBotForLogToken = ''
 
 reqVer = 5.103  # version of VK API [wall.get method]
 reqCount = 3  # number of posts to return (2 - 100)
