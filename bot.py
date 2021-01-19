@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta7
+# v2.0-beta8
 
 import os
 import sys
@@ -85,7 +85,7 @@ def parsePosts(items, last_id):
     """For each post in the received posts list:
         * Сhecks post id to make sure it is larger than the one written in the last_known_id.txt
         * Parses all attachments of post or repost
-        * Calls 'compileLinksAndText()' to compile YT videos and other links from post to post text
+        * Calls 'compileLinksAndText()' to compile links to videos and other links from post to post text
         * Calls 'sendPosts()' to send post to Telegram channel (config.tgChannel)
 
     Args:
@@ -101,7 +101,7 @@ def parsePosts(items, last_id):
             continue
         addLog("i", f"[Post id:{item['id']}] Bot is working with this post")
 
-        cleaning("before")
+        # cleaning("before")
 
         if item["id"] <= last_id:
             break
@@ -147,6 +147,8 @@ def parsePosts(items, last_id):
                 time.sleep(2)
                 if video != None:
                     return video
+                else:
+                    return f"https://vk.com/video{attachment['video']['owner_id']}_{attachment['video']['id']}"
             except Exception as ex:
                 addLog(
                     "e",
@@ -174,27 +176,20 @@ def parsePosts(items, last_id):
                     f'[Post id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getPhoto(): {str(ex)}',
                 )
 
-        """
         def getDoc(attachment):
-            docurl = attachment['doc']['url']
-            extension = attachment['doc']['ext']
-            doc_title = attachment['doc']['title']
-            try:
-                docurl_img = urllib.request.urlopen(docurl).read()
-            except Exception as ex:
-                print(ex)
-            with open(os.path.join('temp', doc_title), 'wb') as temp_file:
-                        temp_file.write(docurl_img)
-                        temp_file.close()
-            docs_exist = True
-        
+            docurl = attachment["doc"]["url"]
+            extension = attachment["doc"]["ext"]
+            doc_title = attachment["doc"]["title"]
+            return docurl
+
+        """
         def getGif(attachment):
             docurl = attachment['doc']['url']
             extension = attachment['doc']['ext']
             gif_link = urllib.request.urlopen(docurl).read()
         """
 
-        def parseAttachments(item, linklist, vidlist, photolist):
+        def parseAttachments(item, linklist, vidlist, photolist, docslist):
             try:
                 for attachment in item["attachments"]:
                     if attachment["type"] == "link":
@@ -205,13 +200,10 @@ def parsePosts(items, last_id):
                             vidlist.append(temp_vid)
                     elif attachment["type"] == "photo":
                         photolist.append(getPhoto(attachment))
-                    """
-                    elif attachment['type'] == 'doc':
-                        if attachment['doc']['ext'] == 'gif':
-                            getGif(attachment)
-                        else:
-                            getDoc(attachment)
-                    """
+                    elif attachment["type"] == "doc":
+                        if attachment["doc"]["ext"] != "gif":
+                            docslist.append(getDoc(attachment))
+                        # elif attachment["doc"]["ext"] == "gif":
             except Exception as ex:
                 addLog(
                     "e",
@@ -223,23 +215,25 @@ def parsePosts(items, last_id):
             links_list = []
             videos_list = []
             photo_url_list = []
-            docs_exist = False
+            docs_list = []
             gif_link = ""
 
             if "attachments" in item:
-                parseAttachments(item, links_list, videos_list, photo_url_list)
+                parseAttachments(
+                    item, links_list, videos_list, photo_url_list, docs_list
+                )
             textOfPost = compileLinksAndText(
                 item["id"], textOfPost, links_list, videos_list, "post"
             )
             if "copy_history" in item:
                 textOfPost = f"""{textOfPost}\n\nREPOST ↓"""
             sendPosts(
-                item["id"], textOfPost, photo_url_list, docs_exist, gif_link, "post"
+                item["id"], textOfPost, photo_url_list, docs_list, gif_link, "post"
             )
-            cleaning("after")
+            # cleaning("after")
 
             if "copy_history" in item:
-                cleaning("before")
+                # cleaning("before")
 
                 item_repost = item["copy_history"][0]
                 link_to_reposted_post = (
@@ -249,12 +243,16 @@ def parsePosts(items, last_id):
                 links_list_rep = []
                 videos_list_rep = []
                 photo_url_list_rep = []
-                docs_exist_rep = False
+                docs_list_rep = []
                 gif_link_rep = ""
 
                 if "attachments" in item_repost:
                     parseAttachments(
-                        item_repost, links_list_rep, videos_list_rep, photo_url_list_rep
+                        item_repost,
+                        links_list_rep,
+                        videos_list_rep,
+                        photo_url_list_rep,
+                        docs_list_rep,
                     )
                 textOfPost_rep = compileLinksAndText(
                     item["id"],
@@ -268,11 +266,11 @@ def parsePosts(items, last_id):
                     item["id"],
                     textOfPost_rep,
                     photo_url_list_rep,
-                    docs_exist_rep,
+                    docs_list_rep,
                     gif_link_rep,
                     "repost",
                 )
-                cleaning("after")
+                # cleaning("after")
         except Exception as ex:
             addLog(
                 "e",
@@ -280,14 +278,14 @@ def parsePosts(items, last_id):
             )
 
 
-def sendPosts(postid, textOfPost, photo_url_list, docs_exist, gif_link, *repost):
+def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
     """Checks the type of post and sends it to Telegram in a suitable method
 
     Args:
         postid (integer): Id of the post that is sent to Telegram. Used for better logging
-        textOfPost (string): Post text with YT videos and links from post attachments
+        textOfPost (string): Post text with links to videos and other links from post attachments
         photo_url_list (list): Photo URL list
-        docs_exist ([type]): Doesnt work for now
+        docs_list (list): List of urls to docs
         gif_link ([type]): Doesnt work for now
         repost[0] (string): Used to determine if it is a post or repost
     """
@@ -308,6 +306,9 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_exist, gif_link, *repost)
                     "i", f"[Post id:{postid}] Bot is trying to send post with photos"
                 )
                 sendPhotosPost()
+
+            if docs_list != []:
+                sendDocs()
         except Exception as ex:
             addLog(
                 "e",
@@ -455,20 +456,44 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_exist, gif_link, *repost)
                 f"[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendPhotosPost(): {str(ex)}",
             )
 
+    def sendDocs():
+        def sendDoc(doc):
+            try:
+                bot.send_document(config.tgChannel, doc)
+                addLog("i", f"[Post id:{postid}] Document sent")
+            except Exception as ex:
+                if type(ex).__name__ == "ConnectionError":
+                    addLog(
+                        "w",
+                        f"[Post id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendDocs(): {str(ex)}",
+                    )
+                    addLog(
+                        "i", f"[Post id:{postid}] Bot trying to resend message to user"
+                    )
+                    time.sleep(3)
+                    sendDoc(doc)
+                addLog(
+                    "e",
+                    f"[Post id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendDocs(): {str(ex)}",
+                )
+
+        for doc in docs_list:
+            sendDoc(doc)
+
     startSending()
 
 
 def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
-    """Compiles YT videos and links with post text
+    """Compiles links to videos and other links with post text
 
     Args:
         postid (integer): Id of the post that is sent to Telegram. Used for better logging
         textOfPost (string): Just a post text
         links_list (list): link(s) from post attachments
-        videos_list (list): link(s) to youtube video(s) from post attachments
+        videos_list (list): link(s) to video(s) from post attachments
 
     Returns:
-        textOfPost (string): Post text with YT videos and links from post attachments
+        textOfPost (string): Post text with links to videos and other links from post attachments
     """
     first_link = True
 
@@ -486,7 +511,7 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
                             textOfPost += f"\n{video}"
                 addLog(
                     "i",
-                    f"[Post id:{postid}] Link(s) to YouTube video(s) was(were) added to post text",
+                    f"[Post id:{postid}] Link(s) to video(s) was(were) added to post text",
                 )
         except Exception as ex:
             addLog(
