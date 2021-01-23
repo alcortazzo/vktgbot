@@ -42,13 +42,9 @@ skipAdsPosts = True
 * Bot sends and receives request from vk api [get.wall method]
 * Then bot compares the id from *last_known_id.txt* with the id of the last post
 * If `skipAdsPosts = True` in `config.py` bot will skip ads posts
-* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
- * sendPosts() checks post type and
-   * if the post type is just text, it sends one text message to telegram
-   * if the post type is text with photos, it sends message with photos to telegram
-   * if the post type is text with **youtube (or vk) video**, it sends message with **link to video** to telegram
-   * if the post type is text with audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
-* Then bot waits for the period set by the user and starts again
+* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **parsePosts()**
+* **parsePosts()** parses attachments from posts (or reposts if exists) and calls sendPosts() to send them to Telegram
+* Then bot is waiting for the period settled by the user and starts again
 
 ## Installation & Usage
 ### Linux
