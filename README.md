@@ -25,14 +25,15 @@
 |Type of VK post|Is implemented?|What bot will send to Telegram
 |:---:|:---:|:---:|
 |Text post|**Yes**|Text post
-|Text post with photo / gif|**Yes**|Text post with photo / gif
-|Text post with links|**Yes** |Text post with links
-|Text post with (yt/vk) video|**Yes**|Text post with link to video
-|Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
-|Text post with document|**Yes**|Text post with document|
-|VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
-|Text post with polls|Not yet|Just text post for now
+|Text post with photo(s)|**Yes**|Text post with photo(s)
+|Text post with link(s)|**Yes** |Text post with link(s)
+|Text post with (yt/vk) video(s)|**Yes**|Text post with link(s) to video(s)
+|Text post with audios|**~**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Text post with document(s)|**Yes**|Text post with document(s)|
+|Text post with VK repost|**Yes**|Original post and repost in 2 messages*
+|Text post with polls|**~**|Just text post for now
 
+**One message with original post's text and attachments and one message with repost's text and attachments*
 ### In addition, bot can skip ads posts if  in `config.py`
 ```python
 skipAdsPosts = True
