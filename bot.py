@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0-beta8
+# v2.0
 
 import os
 import sys
