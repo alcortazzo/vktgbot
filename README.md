@@ -5,7 +5,7 @@
     <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
     <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
 </p>    
-<p align="center"><b>Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
+<p align="center"><b>Telegram Bot on Python for reposting from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
 
 <p align="center">
     <a href="#what-is-now-implemented">What is now implemented</a>
@@ -43,7 +43,7 @@ skipAdsPosts = True
 * Bot sends and receives request from vk api [get.wall method]
 * Then bot compares the id from *last_known_id.txt* with the id of the last post
 * If `skipAdsPosts = True` in `config.py` bot will skip ads posts
-* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **parsePosts()**
+* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to the file and call the function **parsePosts()**
 * **parsePosts()** parses attachments from posts (or reposts if exists) and calls sendPosts() to send them to Telegram
 * Then bot is waiting for the period settled by the user and starts again
 
