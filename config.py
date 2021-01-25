@@ -13,9 +13,12 @@ vkDomain = 'bbbb'  # domain of vk channel (vk.com/>>>>aaaaaaaa<<<<)
 tgLogChannel = '@cccc'  # link to another channel in telegram if you want to get bot's log message
                         # !!! you must add bot to this channel as an administrator
                         # yes, you can use the same bot as for the main task
+tgBotForLogToken = ''   # set token here if you want vktgbot to use another bot for logging
+                        # leave the variable empty if you want use first bot (tgBotToken) for logging 
+                        # !!! you must add this bot to tgLogChannel as administrator 
 
-reqVer = 5.103  # version of VK API [wall.get method]
-reqCount = 3  # number of posts to return (2 - 100)
+reqVer = 5.103       # version of VK API [wall.get method]
+reqCount = 3         # number of posts to return (2 - 100)
 reqFilter = 'owner'  # Filter to apply: owner — posts by the wall owner; others — posts by someone else;
                      # all — posts by the wall owner and others (default)
                      # postponed — timed posts (only available for calls with an access_token)
@@ -26,14 +29,8 @@ timeSleep = 60 * 2  # time in seconds
 isPinned = False
 skipAdsPosts = True
 
-parsePost = True  # bot will skip just text posts if the value is False
-parsePhoto = True  # bot will skip photo posts if the value is False
-parseVideo = True  # bot will skip video posts if the value is False
-parseLink = True  # bot will skip posts with link if the value is False
-parseDoc = True  # bot will skip posts with docs/gif if the value is False
-
-proxyEnable = False  # Set True if telegram is not available in your country
-proxyLogin = "bot"  # Login for Socks5 proxy
-proxyPass = "12345"  # Password for Socks5 proxy
-proxyIp = "myproxy.com"  # Socks5 proxy ip
-proxyPort = "1234"  # Socks5 proxy port
+proxyEnable = False     # Set True if telegram is not available in your country
+proxyLogin = "bot"      # Login for Socks5 proxy
+proxyPass = "12345"     # Password for Socks5 proxy
+proxyIp = "myproxy.com" # Socks5 proxy ip
+proxyPort = "1234"      # Socks5 proxy port

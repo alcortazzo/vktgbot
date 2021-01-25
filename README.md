@@ -5,7 +5,7 @@
     <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
     <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
 </p>    
-<p align="center"><b>Telegram Bot on Python for repost from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
+<p align="center"><b>Telegram Bot on Python for reposting from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
 
 <p align="center">
     <a href="#what-is-now-implemented">What is now implemented</a>
@@ -25,14 +25,15 @@
 |Type of VK post|Is implemented?|What bot will send to Telegram
 |:---:|:---:|:---:|
 |Text post|**Yes**|Text post
-|Text post with photo / gif|**Yes**|Text post with photo / gif
-|Text post with links|**Yes** |Text post with links
-|Text post with (yt/vk) video|**Yes**|Text post with link to video
-|Text post with audios|**50/50**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
-|Text post with document|**Yes**|Text post with document|
-|VK reposts|**Yes**|Post with original post & repost text ([**e. g.**](https://i.imgur.com/FRyo80A.png))
-|Text post with polls|Not yet|Just text post for now
+|Text post with photo(s)|**Yes**|Text post with photo(s)
+|Text post with link(s)|**Yes** |Text post with link(s)
+|Text post with (yt/vk) video(s)|**Yes**|Text post with link(s) to video(s)
+|Text post with audios|**~**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
+|Text post with document(s)|**Yes**|Text post with document(s)|
+|Text post with VK repost|**Yes**|Original post and repost in 2 messages*
+|Text post with polls|**~**|Just text post for now
 
+**One message with original post's text and attachments and one message with repost's text and attachments*
 ### In addition, bot can skip ads posts if  in `config.py`
 ```python
 skipAdsPosts = True
@@ -42,13 +43,9 @@ skipAdsPosts = True
 * Bot sends and receives request from vk api [get.wall method]
 * Then bot compares the id from *last_known_id.txt* with the id of the last post
 * If `skipAdsPosts = True` in `config.py` bot will skip ads posts
-* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to file and call the function **sendPosts()**
- * sendPosts() checks post type and
-   * if the post type is just text, it sends one text message to telegram
-   * if the post type is text with photos, it sends message with photos to telegram
-   * if the post type is text with **youtube (or vk) video**, it sends message with **link to video** to telegram
-   * if the post type is text with audio, it sends one text message without audio to telegram *(because vk_api [does not support](https://vk.com/dev/audio)  audio files)*
-* Then bot waits for the period set by the user and starts again
+* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to the file and call the function **parsePosts()**
+* **parsePosts()** parses attachments from posts (or reposts if exists) and calls sendPosts() to send them to Telegram
+* Then bot is waiting for the period settled by the user and starts again
 
 ## Installation & Usage
 ### Linux
