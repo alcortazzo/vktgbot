@@ -411,6 +411,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
 
             if len(textOfPost) <= 1024 and len(textOfPost) > 0:
                 photo_list[0].caption = textOfPost
+                photo_list[0].parse_mode = "HTML"
             elif len(textOfPost) > 1024:
                 if len(textOfPost) <= 4096:
                     bot.send_message(config.tgChannel, textOfPost, parse_mode="HTML")
