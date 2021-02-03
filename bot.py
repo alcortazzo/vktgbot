@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.0
+# v2.0.1
 
 import os
 import sys
@@ -108,6 +108,12 @@ def parsePosts(items, last_id):
                 f"[id:{item['id']}]Post was skipped because it was flagged as ad",
             )
             continue
+        if config.skipPostsWithCopyright and "copyright" in item:
+            addLog(
+                "i",
+                f"[id:{item['id']}]Post was skipped because it has copyright",
+            )
+            continue
         addLog("i", f"[id:{item['id']}] Bot is working with this post")
 
         def getLink(attachment):
@@ -183,6 +189,19 @@ def parsePosts(items, last_id):
             doc_title = attachment["doc"]["title"]
             return docurl
 
+        def getPublicNameById(id):
+            try:
+                data = requests.get(
+                    f"https://api.vk.com/method/groups.getById?access_token={config.vkToken}&v=5.103&group_id={id}"
+                )
+                return data.json()["response"][0]["name"]
+            except Exception as ex:
+                addLog(
+                    "e",
+                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getPublicNameById(): {str(ex)}',
+                )
+                return ""
+
         """
         def getGif(attachment):
             docurl = attachment['doc']['url']
@@ -212,6 +231,7 @@ def parsePosts(items, last_id):
                 )
 
         try:
+            print(item)
             textOfPost = item["text"]
             links_list = []
             videos_list = []
@@ -224,10 +244,15 @@ def parsePosts(items, last_id):
                     item, links_list, videos_list, photo_url_list, docs_list
                 )
             textOfPost = compileLinksAndText(
-                item["id"], textOfPost, links_list, videos_list, "post"
+                item["id"],
+                textOfPost,
+                links_list,
+                videos_list,
+                "post",
             )
             if "copy_history" in item and textOfPost != "":
-                textOfPost = f"""{textOfPost}\n\nREPOST ↓"""
+                groupName = getPublicNameById(abs(item["copy_history"][0]["owner_id"]))
+                textOfPost = f"""{textOfPost}\n\nREPOST ↓ {groupName}"""
             sendPosts(
                 item["id"], textOfPost, photo_url_list, docs_list, gif_link, "post"
             )
@@ -246,6 +271,8 @@ def parsePosts(items, last_id):
                 photo_url_list_rep = []
                 docs_list_rep = []
                 gif_link_rep = ""
+                group_id = abs(item_repost["owner_id"])
+                group_name = getPublicNameById(group_id)
 
                 if "attachments" in item_repost:
                     parseAttachments(
@@ -262,6 +289,7 @@ def parsePosts(items, last_id):
                     videos_list_rep,
                     "repost",
                     link_to_reposted_post,
+                    group_name,
                 )
                 sendPosts(
                     item["id"],
@@ -539,7 +567,7 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
     addVideo()
     addLink()
     if repost[0] == "repost":
-        textOfPost = f'<a href="{repost[1]}"><b>REPOST ↓</b></a>\n\n<i>{textOfPost}</i>'
+        textOfPost = f'<a href="{repost[1]}"><b>REPOST ↓ {repost[2]}</b></a>\n\n<i>{textOfPost}</i>'
     return textOfPost
 
 
