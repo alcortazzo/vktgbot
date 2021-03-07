@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.1
+# v2.2
 
 import os
 import sys
@@ -231,7 +231,7 @@ def parsePosts(items, last_id):
                 )
 
         try:
-            textOfPost = item["text"]
+            textOfPost = ready_for_html(item["text"])
             links_list = []
             videos_list = []
             photo_url_list = []
@@ -260,7 +260,7 @@ def parsePosts(items, last_id):
             if "copy_history" in item:
                 # cleaning("before")
 
-                item_repost = item["copy_history"][0]
+                item_repost = ready_for_html(item["copy_history"][0])
                 link_to_reposted_post = (
                     f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
                 )
@@ -345,10 +345,18 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
         try:
             if type_of_post == "post":
                 if len(textOfPost) < 4096:
-                    bot.send_message(config.tgChannel, textOfPost)
+                    bot.send_message(config.tgChannel, textOfPost, parse_mode="HTML")
                 else:
-                    bot.send_message(config.tgChannel, f"{textOfPost[:4090]} (...)")
-                    bot.send_message(config.tgChannel, f"(...) {textOfPost[4090:]}")
+                    bot.send_message(
+                        config.tgChannel,
+                        f"{textOfPost[:4090]} (...)",
+                        parse_mode="HTML",
+                    )
+                    bot.send_message(
+                        config.tgChannel,
+                        f"(...) {textOfPost[4090:]}",
+                        parse_mode="HTML",
+                    )
             elif type_of_post == "repost":
                 if len(textOfPost) < 4096:
                     bot.send_message(
@@ -571,6 +579,9 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
 
 
 def checkNewPost():
+    """Gets list of posts from getData(),
+    compares post's id with id from the last_known_id.txt file.
+    Sends list of posts to parsePosts(), writes new last id into file"""
     if not isBotChannelAdmin(bot, config.tgChannel):
         pass
     addLog("i", "Scanning for new posts")
@@ -611,6 +622,27 @@ def checkNewPost():
         pass
     addLog("i", "Scanning finished")
     return
+
+
+def ready_for_html(text):
+    """All '<', '>' and '&' symbols that are not a part
+    of a tag or an HTML entity must be replaced with the
+    corresponding HTML entities:
+    ('<' with '&lt;', '>' with '&gt;' and '&' with '&amp;')
+    https://core.telegram.org/bots/api#html-style
+
+    Args:
+        text (str): Post text before replacing characters
+
+    Returns:
+        str: Text from Args, but with characters replaced
+    """
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
 
 
 def cleaning(when):

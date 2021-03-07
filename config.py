@@ -7,7 +7,7 @@ BLACKLIST = ['']  # You can add words to the blacklist. If a post contains a bla
 
 tgChannel = '@aaaa'  # link to channel in telegram !!! you must add bot to this channel as an administrator
 tgBotToken = '1234567890:AAA-AaA1aaa1AAaaAa1a1AAAAA-a1aa1-Aa'  # your token from t.me/BotFather
-vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0'  # your token from https://vk.com/dev/authcode_flow_user
+vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0'  # your token from https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token
 vkDomain = 'bbbb'  # domain of vk channel (vk.com/>>>>aaaaaaaa<<<<)
 
 tgLogChannel = '@cccc'  # link to another channel in telegram if you want to get bot's log message
