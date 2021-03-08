@@ -260,11 +260,11 @@ def parsePosts(items, last_id):
             if "copy_history" in item:
                 # cleaning("before")
 
-                item_repost = ready_for_html(item["copy_history"][0])
+                item_repost = item["copy_history"][0]
                 link_to_reposted_post = (
                     f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
                 )
-                textOfPost_rep = item_repost["text"]
+                textOfPost_rep = ready_for_html(item_repost["text"])
                 links_list_rep = []
                 videos_list_rep = []
                 photo_url_list_rep = []
