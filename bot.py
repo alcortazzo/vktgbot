@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.2
+# v2.3
 
 import os
 import sys
@@ -20,7 +20,7 @@ from telebot import TeleBot, types, apihelper
 bot = TeleBot(config.tgBotToken)
 
 if (
-    len(config.tgLogChannel) > 5
+    len(str(config.tgLogChannel)) > 5
     and config.tgLogChannel != "@"
     and config.tgLogChannel != ""
 ):
@@ -166,17 +166,22 @@ def parsePosts(items, last_id):
             try:
                 # check the size of the photo and add this photo to the URL list
                 # (from large to smaller)
-                # photo with type W > Z > *
-                photo = attachment["photo"]["sizes"]
-                if photo[-1]["type"] == "z":
-                    for url in photo:
-                        if url["type"] == "w":
-                            return url["url"]
-                        elif url["type"] == "z":
-                            return url["url"]
-                # if we did not find 'w' or 'z', we take the largest available
-                elif photo[-1]["type"] != "z":
-                    return photo[-1]["url"]
+                # photo with type W > Z > Y > X > (...)
+                photo_sizes = attachment["photo"]["sizes"]
+                photo_types = ["w", "z", "y", "x", "r", "q", "p", "o", "m", "s"]
+                for photo_type in photo_types:
+                    if next(
+                        (item for item in photo_sizes if item["type"] == photo_type),
+                        False,
+                    ):
+                        return next(
+                            (
+                                item
+                                for item in photo_sizes
+                                if item["type"] == photo_type
+                            ),
+                            False,
+                        )["url"]
             except Exception as ex:
                 addLog(
                     "e",
@@ -322,10 +327,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
         try:
             if len(photo_url_list) == 0:
                 addLog("i", f"[id:{postid}] Bot is trying to send text post")
-                if repost[0] == "post":
-                    sendTextPost("post")
-                elif repost[0] == "repost":
-                    sendTextPost("repost")
+                sendTextPost(repost[0])
             elif len(photo_url_list) == 1:
                 addLog("i", f"[id:{postid}] Bot is trying to send post with photo")
                 sendPhotoPost()
