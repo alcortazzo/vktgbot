@@ -96,7 +96,7 @@ vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000d
 vkDomain = 'bbbb'
 ```
 * `tgChannel` is the link to channel in telegram `t.me/>>aaaa<<`. **You must add bot to this channel as an administrator**
-* `tgBotToken` is the bot token from [BotFather](t.me/BotFather)
+* `tgBotToken` is the bot token from [BotFather](https://t.me/BotFather)
 * `vkToken` is your vk **personal** token. [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)
   * **You can just use the vk service token** ([HowToGet](https://youtu.be/oGS683RYmg8)), but if you want to repost posts from closed groups or want to repost posts with YouTube videos use personal token.
 * `vkDomain` is the link to vk public `vk.com/>>bbbb<<`
