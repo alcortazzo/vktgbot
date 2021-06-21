@@ -345,42 +345,47 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
 
     def sendTextPost(type_of_post):
         try:
-            if type_of_post == "post":
-                if len(textOfPost) < 4096:
-                    bot.send_message(config.tgChannel, textOfPost, parse_mode="HTML")
-                else:
-                    bot.send_message(
-                        config.tgChannel,
-                        f"{textOfPost[:4090]} (...)",
-                        parse_mode="HTML",
-                    )
-                    bot.send_message(
-                        config.tgChannel,
-                        f"(...) {textOfPost[4090:]}",
-                        parse_mode="HTML",
-                    )
-            elif type_of_post == "repost":
-                if len(textOfPost) < 4096:
-                    bot.send_message(
-                        config.tgChannel,
-                        textOfPost,
-                        parse_mode="HTML",
-                        disable_web_page_preview=True,
-                    )
-                else:
-                    bot.send_message(
-                        config.tgChannel,
-                        f"{textOfPost[:4090]} (...)",
-                        parse_mode="HTML",
-                        disable_web_page_preview=True,
-                    )
-                    bot.send_message(
-                        config.tgChannel,
-                        f"(...) {textOfPost[4090:]}",
-                        parse_mode="HTML",
-                        disable_web_page_preview=True,
-                    )
-            addLog("i", f"[id:{postid}] Text post sent")
+            if textOfPost:
+                if type_of_post == "post":
+                    if len(textOfPost) < 4096:
+                        bot.send_message(
+                            config.tgChannel, textOfPost, parse_mode="HTML"
+                        )
+                    else:
+                        bot.send_message(
+                            config.tgChannel,
+                            f"{textOfPost[:4090]} (...)",
+                            parse_mode="HTML",
+                        )
+                        bot.send_message(
+                            config.tgChannel,
+                            f"(...) {textOfPost[4090:]}",
+                            parse_mode="HTML",
+                        )
+                elif type_of_post == "repost":
+                    if len(textOfPost) < 4096:
+                        bot.send_message(
+                            config.tgChannel,
+                            textOfPost,
+                            parse_mode="HTML",
+                            disable_web_page_preview=True,
+                        )
+                    else:
+                        bot.send_message(
+                            config.tgChannel,
+                            f"{textOfPost[:4090]} (...)",
+                            parse_mode="HTML",
+                            disable_web_page_preview=True,
+                        )
+                        bot.send_message(
+                            config.tgChannel,
+                            f"(...) {textOfPost[4090:]}",
+                            parse_mode="HTML",
+                            disable_web_page_preview=True,
+                        )
+                addLog("i", f"[id:{postid}] Text post sent")
+            else:
+                addLog("i", f"[id:{postid}] Text post skipped because it is empty")
         except Exception as ex:
             if type(ex).__name__ == "ConnectionError":
                 addLog(
