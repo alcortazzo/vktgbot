@@ -13,7 +13,6 @@ import shutil
 import logging
 import requests
 import eventlet
-from PIL import Image
 from datetime import datetime
 from telebot import TeleBot, types, apihelper
 
