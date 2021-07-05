@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Made by @alcortazzo
-# v2.3
+# v2.4
 
 import os
+import re
 import sys
 import time
 import urllib
@@ -223,7 +224,13 @@ def parsePosts(items, last_id):
                         if temp_vid != None:
                             vidlist.append(temp_vid)
                     elif attachment["type"] == "photo":
-                        photolist.append(getPhoto(attachment))
+                        photolist.append(
+                            re.sub(
+                                "&([a-zA-Z]+(_[a-zA-Z]+)+)=([a-zA-Z0-9-_]+)",
+                                "",
+                                getPhoto(attachment),
+                            )
+                        )
                     elif attachment["type"] == "doc":
                         if attachment["doc"]["ext"] != "gif":
                             docslist.append(getDoc(attachment))
