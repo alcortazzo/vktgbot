@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # Made by @alcortazzo
 # v2.4
 
@@ -374,20 +371,17 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
                             config.tgChannel,
                             textOfPost,
                             parse_mode="HTML",
-                            disable_web_page_preview=True,
                         )
                     else:
                         bot.send_message(
                             config.tgChannel,
                             f"{textOfPost[:4090]} (...)",
                             parse_mode="HTML",
-                            disable_web_page_preview=True,
                         )
                         bot.send_message(
                             config.tgChannel,
                             f"(...) {textOfPost[4090:]}",
                             parse_mode="HTML",
-                            disable_web_page_preview=True,
                         )
                 addLog("i", f"[id:{postid}] Text post sent")
             else:
@@ -543,51 +537,28 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
     """
     first_link = True
 
-    def addVideo():
-        try:
-            nonlocal first_link
-            nonlocal textOfPost
-            if videos_list != [] and videos_list != [None]:
-                for video in videos_list:
-                    if video not in textOfPost:
-                        if first_link:
-                            textOfPost += f"\n\n{video}"
-                            first_link = False
-                        elif not first_link:
-                            textOfPost += f"\n{video}"
-                addLog(
-                    "i",
-                    f"[id:{postid}] Link(s) to video(s) was(were) added to post text",
-                )
-        except Exception as ex:
-            addLog(
-                "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText() --> addVideo(): {str(ex)}",
-            )
+    def addLinks(links):
+        nonlocal first_link
+        nonlocal textOfPost
+        if links and links != [None]:
+            for link in links:
+                if link not in textOfPost:
+                    if first_link:
+                        textOfPost = f'<a href="{link}"> </a>{textOfPost}\n'
+                        first_link = False
+                    textOfPost += f"\n{link}"
 
-    def addLink():
-        try:
-            nonlocal first_link
-            nonlocal textOfPost
-            if links_list != [] and links_list != [None]:
-                for link in links_list:
-                    if link not in textOfPost:
-                        if first_link:
-                            textOfPost += f"\n\n{link}"
-                            first_link = False
-                        elif not first_link:
-                            textOfPost += f"\n{link}"
-                addLog("i", f"[id:{postid}] Link(s) was(were) added to post text")
-        except Exception as ex:
-            addLog(
-                "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText() --> addLink(): {str(ex)}",
-            )
-
-    addVideo()
-    addLink()
     if repost[0] == "repost":
         textOfPost = f'<a href="{repost[1]}"><b>REPOST ↓ {repost[2]}</b></a>\n\n<i>{textOfPost}</i>'
+    try:
+        addLinks(videos_list)
+        addLinks(links_list)
+        addLog("i", f"[id:{postid}] Link(s) was(were) added to post text")
+    except Exception as ex:
+        addLog(
+            "e",
+            f"[id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText(): {str(ex)}",
+        )
     return textOfPost
 
 
