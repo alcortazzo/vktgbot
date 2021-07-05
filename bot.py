@@ -658,6 +658,7 @@ def isBotChannelAdmin(specific_bot, specific_channel):
     """
     try:
         _ = specific_bot.get_chat_administrators(specific_channel)
+        return True
     except Exception as ex:
         global isBotForLog
         isBotForLog = False
@@ -668,33 +669,25 @@ def isBotChannelAdmin(specific_bot, specific_channel):
         return False
 
 
-def addLog(type, text):
+def addLog(type_of_log, text):
     """Unifies logging and makes it easier to use
 
     Args:
         type (string): Type of logging message (warning / info / error)
         text (string): Logging text
     """
+    types = {"w": "WARNING", "i": "INFO", "e": "ERROR"}
+    log_message = f"[{types[type_of_log]}] {text}"
+    if type_of_log == "w":  # WARNING
+        logger.warning(text)
+    elif type_of_log == "i":  # INFO
+        logger.info(text)
+    elif type_of_log == "e":  # ERROR
+        logger.error(text)
+
     global isBotForLog
-    if isBotForLog:
-        isBotChannelAdmin(bot_2, config.tgLogChannel)
-    log_message = ""
-    if type == "w":  # WARNING
-        log_message = f"[WARNING] {text}"
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), "| " + log_message)
-        if config.ShouldBotLog:
-            logging.warning(log_message)
-    elif type == "i":  # INFO
-        log_message = f"[Bot] [Info] {text}"
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), "| " + log_message)
-        if config.ShouldBotLog:
-            logging.info(log_message)
-    elif type == "e":  # ERROR
-        log_message = f"[ERROR] {text}"
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), "| " + log_message)
-        if config.ShouldBotLog:
-            logging.error(log_message)
-    if isBotForLog:
+    if isBotForLog and isBotChannelAdmin(bot_2, config.tgLogChannel):
+        time.sleep(1)
         sendLog(log_message)
 
 
@@ -718,10 +711,10 @@ def sendLog(log_message):
             )
             bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode="HTML")
         except Exception as ex:
-            log_message = f"[ERROR] Something [{type(ex).__name__}] went wrong in sendLog(): {str(ex)}"
-            print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"), "| " + log_message)
-            if config.ShouldBotLog:
-                logging.error(log_message)
+            global logger
+            logger.error(
+                f"Something [{type(ex).__name__}] went wrong in sendLog(): {str(ex)}"
+            )
 
 
 def blacklist_check(text):
@@ -757,14 +750,27 @@ def check_python_version():
 
 if __name__ == "__main__":
     check_python_version()
-    if config.ShouldBotLog:
-        logging.getLogger("requests").setLevel(logging.CRITICAL)
-        logging.basicConfig(
-            format="[%(asctime)s] %(filename)s:%(lineno)d %(levelname)s - %(message)s",
-            level=logging.INFO,
-            filename="bot.log",
-            datefmt="%d.%m.%Y %H:%M:%S",
-        )
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+
+    formatter = logging.Formatter(
+        "[%(asctime)s] %(filename)s:%(lineno)d %(levelname)s - %(message)s"
+    )
+
+    file_handler = logging.FileHandler("dev.log")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+
+    logger.info("Bot has been started")
+    logger.error("Bot has been started")
+    logger.warning("Bot has been started")
+
     if not config.singleStart:
         while True:
             checkNewPost()
@@ -772,7 +778,6 @@ if __name__ == "__main__":
                 "i",
                 "Script went to sleep for " + str(config.timeSleep) + " seconds\n\n",
             )
-            # pause for n minutes (timeSleep in config.py)
             time.sleep(int(config.timeSleep))
     elif config.singleStart:
         checkNewPost()
