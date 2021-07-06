@@ -13,6 +13,7 @@ import requests
 import eventlet
 from datetime import datetime
 from telebot import TeleBot, types, apihelper
+from logging.handlers import TimedRotatingFileHandler
 
 bot = TeleBot(config.tgBotToken)
 
@@ -750,6 +751,10 @@ def check_python_version():
 
 if __name__ == "__main__":
     check_python_version()
+
+    if not os.path.exists(f"./{config.logFolderName}"):
+        os.makedirs(f"./{config.logFolderName}")
+
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
@@ -757,19 +762,24 @@ if __name__ == "__main__":
         "[%(asctime)s] %(filename)s:%(lineno)d %(levelname)s - %(message)s"
     )
 
-    file_handler = logging.FileHandler("dev.log")
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(formatter)
+    # file_handler = logging.FileHandler("dev.log")
+    # file_handler.setLevel(logging.INFO)
+    # file_handler.setFormatter(formatter)
 
     stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(formatter)
 
-    logger.addHandler(file_handler)
-    logger.addHandler(stream_handler)
+    tr_file_handler = TimedRotatingFileHandler(
+        f"./{config.logFolderName}/{config.logFileName}", "midnight", interval=1
+    )
+    tr_file_handler.suffix = "%Y%m%d"
+    tr_file_handler.setLevel(logging.INFO)
+    tr_file_handler.setFormatter(formatter)
 
-    logger.info("Bot has been started")
-    logger.error("Bot has been started")
-    logger.warning("Bot has been started")
+    # logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+    logger.addHandler(tr_file_handler)
 
     if not config.singleStart:
         while True:

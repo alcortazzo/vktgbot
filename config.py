@@ -1,4 +1,3 @@
-ShouldBotLog = True  # If False bot will not create and keep bot.log file
 BLACKLIST = [""]  # You can add words to the blacklist. If a post contains a blacklisted word, the post will be skipped
 # BLACKLIST = ["ExAmPlE", "etc", "123456789"] <== That's an example. But be careful. Do not add just one symbol to the list.
 
@@ -38,3 +37,6 @@ proxyLogin = "bot"      # Login for Socks5 proxy
 proxyPass = "12345"     # Password for Socks5 proxy
 proxyIp = "myproxy.com" # Socks5 proxy ip
 proxyPort = "1234"      # Socks5 proxy port
+
+logFolderName = "logs"  # name of the folder in which the log files will be stored
+logFileName = "dev.log"
