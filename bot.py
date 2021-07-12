@@ -96,6 +96,10 @@ def parsePosts(items, last_id):
             addLog("i", f"[id:{item['id']}] Post was skipped due to blacklist filter")
             continue
 
+        if whitelist_check(item["text"]):
+            addLog("i", f"[id:{item['id']}] Post was skipped due to whitelist filter")
+            continue
+
         # cleaning("before")
 
         if item["id"] <= last_id:
@@ -122,6 +126,12 @@ def parsePosts(items, last_id):
                     addLog(
                         "i",
                         f"[id:{item['id']}] Post was skipped due to blacklist filter",
+                    )
+
+                if whitelist_check(link_object):
+                    addLog(
+                        "i",
+                        f"[id:{item['id']}] Post was skipped due to whitelist filter",
                     )
 
                 if link_object not in textOfPost:
@@ -727,17 +737,32 @@ def blacklist_check(text):
     Returns:
         [bool]
     """
-    isBlackWord = False
-    if (
-        config.BLACKLIST != []
-        and config.BLACKLIST != [""]
-        and config.BLACKLIST != [" "]
-    ):
+    if config.BLACKLIST:
+        text_lower = text.lower()
         for black_word in config.BLACKLIST:
-            if black_word.lower() in text.lower():
-                isBlackWord = True
-    if isBlackWord:
+            if black_word.lower() in text_lower:
+                return True
+
+    return False
+
+
+def whitelist_check(text):
+    """Checks text or links for filter words from config.WHITELIST
+
+    Args:
+        text (string): message text or link
+
+    Returns:
+        [bool]
+    """
+    if config.WHITELIST:
+        text_lower = text.lower()
+        for white_word in config.WHITELIST:
+            if white_word.lower() in text_lower:
+                return False
         return True
+
+    return False
 
 
 def check_python_version():

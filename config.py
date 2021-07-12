@@ -1,6 +1,3 @@
-BLACKLIST = [""]  # You can add words to the blacklist. If a post contains a blacklisted word, the post will be skipped
-# BLACKLIST = ["ExAmPlE", "etc", "123456789"] <== That's an example. But be careful. Do not add just one symbol to the list.
-
 tgChannel = "@aaaa"  # link to the channel in telegram
                      # or channel ID (for example: tgChannel = -1234567890987)
                      # (you can get channel ID here t.me/username_to_id_bot)
@@ -31,6 +28,13 @@ timeSleep = 60 * 2  # waiting time between cycle passes
 isPinned = False
 skipAdsPosts = True  # set True if you want to skip sponsored posts
 skipPostsWithCopyright = False
+
+WHITELIST = []  # Words whitelist. Bot will repost posts only containing words in whitelist. Useful for hashtags
+BLACKLIST = []  # Words blacklist. If a post contains a blacklisted word, the post will be skipped
+# Example
+# WHITELIST = ["#music", "new"]
+# BLACKLIST = ["rap", "dubstep"]
+# This configuration will keep posts only with music hashtag and word "new" excluding posts with words "rap" and "dubstep"
 
 proxyEnable = False     # Set True if telegram is not available in your country
 proxyLogin = "bot"      # Login for Socks5 proxy
