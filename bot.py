@@ -11,17 +11,12 @@ import shutil
 import logging
 import requests
 import eventlet
-from datetime import datetime
 from telebot import TeleBot, types, apihelper
 from logging.handlers import TimedRotatingFileHandler
 
 bot = TeleBot(config.tgBotToken)
 
-if (
-    len(str(config.tgLogChannel)) > 5
-    and config.tgLogChannel != "@"
-    and config.tgLogChannel != ""
-):
+if len(str(config.tgLogChannel)) > 5:
     if config.tgBotForLogToken != "":
         bot_2 = TeleBot(config.tgBotForLogToken)
     else:
@@ -30,21 +25,7 @@ if (
 else:
     isBotForLog = False
 
-print(
-    "\n\n            /$$         /$$               /$$                   /$$    \n",
-    "           | $$        | $$              | $$                  | $$    \n",
-    " /$$    /$$| $$   /$$ /$$$$$$    /$$$$$$ | $$$$$$$   /$$$$$$  /$$$$$$  \n",
-    "|  $$  /$$/| $$  /$$/|_  $$_/   /$$__  $$| $$__  $$ /$$__  $$|_  $$_/  \n",
-    " \\  $$/$$/ | $$$$$$/   | $$    | $$  \\ $$| $$  \\ $$| $$  \\ $$  | $$    \n",
-    "  \\  $$$/  | $$_  $$   | $$ /$$| $$  | $$| $$  | $$| $$  | $$  | $$ /$$\n",
-    "   \\  $/   | $$ \\  $$  |  $$$$/|  $$$$$$$| $$$$$$$/|  $$$$$$/  |  $$$$/\n",
-    "    \\_/    |__/  \\__/   \\___/   \\____  $$|_______/  \\______/    \\___/  \n",
-    "                                /$$  \\ $$                              \n",
-    "                               |  $$$$$$/                              \n",
-    "                                \\______/                               \n\n",
-)
 
-# enable proxy for telegram
 if config.proxyEnable:
     apihelper.proxy = {
         "https": f"socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}"
@@ -91,7 +72,10 @@ def parsePosts(items, last_id):
         last_id (integer): The current value in the last_known_id.txt
                            (must be less than id of the new post)
     """
-    for item in items:
+    for item in items[::-1]:
+        if item["id"] <= last_id:
+            continue
+
         if blacklist_check(item["text"]):
             addLog("i", f"[id:{item['id']}] Post was skipped due to blacklist filter")
             continue
@@ -100,10 +84,6 @@ def parsePosts(items, last_id):
             addLog("i", f"[id:{item['id']}] Post was skipped due to whitelist filter")
             continue
 
-        # cleaning("before")
-
-        if item["id"] <= last_id:
-            break
         if config.skipAdsPosts and item["marked_as_ads"] == 1:
             addLog(
                 "i",
@@ -121,18 +101,6 @@ def parsePosts(items, last_id):
         def getLink(attachment):
             try:
                 link_object = attachment["link"]["url"]
-
-                if blacklist_check(link_object):
-                    addLog(
-                        "i",
-                        f"[id:{item['id']}] Post was skipped due to blacklist filter",
-                    )
-
-                if whitelist_check(link_object):
-                    addLog(
-                        "i",
-                        f"[id:{item['id']}] Post was skipped due to whitelist filter",
-                    )
 
                 if link_object not in textOfPost:
                     return link_object
@@ -215,13 +183,6 @@ def parsePosts(items, last_id):
                 )
                 return ""
 
-        """
-        def getGif(attachment):
-            docurl = attachment['doc']['url']
-            extension = attachment['doc']['ext']
-            gif_link = urllib.request.urlopen(docurl).read()
-        """
-
         def parseAttachments(item, linklist, vidlist, photolist, docslist):
             try:
                 for attachment in item["attachments"]:
@@ -240,9 +201,7 @@ def parsePosts(items, last_id):
                             )
                         )
                     elif attachment["type"] == "doc":
-                        if attachment["doc"]["ext"] != "gif":
-                            docslist.append(getDoc(attachment))
-                        # elif attachment["doc"]["ext"] == "gif":
+                        docslist.append(getDoc(attachment))
             except Exception as ex:
                 addLog(
                     "e",
@@ -255,7 +214,6 @@ def parsePosts(items, last_id):
             videos_list = []
             photo_url_list = []
             docs_list = []
-            gif_link = ""
 
             if "attachments" in item:
                 parseAttachments(
@@ -271,14 +229,9 @@ def parsePosts(items, last_id):
             if "copy_history" in item and textOfPost != "":
                 groupName = getPublicNameById(abs(item["copy_history"][0]["owner_id"]))
                 textOfPost = f"""{textOfPost}\n\nREPOST ↓ {groupName}"""
-            sendPosts(
-                item["id"], textOfPost, photo_url_list, docs_list, gif_link, "post"
-            )
-            # cleaning("after")
+            sendPosts(item["id"], textOfPost, photo_url_list, docs_list)
 
             if "copy_history" in item:
-                # cleaning("before")
-
                 item_repost = item["copy_history"][0]
                 link_to_reposted_post = (
                     f"https://vk.com/wall{item_repost['from_id']}_{item_repost['id']}"
@@ -288,7 +241,6 @@ def parsePosts(items, last_id):
                 videos_list_rep = []
                 photo_url_list_rep = []
                 docs_list_rep = []
-                gif_link_rep = ""
                 group_id = abs(item_repost["owner_id"])
                 group_name = getPublicNameById(group_id)
 
@@ -314,10 +266,7 @@ def parsePosts(items, last_id):
                     textOfPost_rep,
                     photo_url_list_rep,
                     docs_list_rep,
-                    gif_link_rep,
-                    "repost",
                 )
-                # cleaning("after")
         except Exception as ex:
             addLog(
                 "e",
@@ -325,7 +274,7 @@ def parsePosts(items, last_id):
             )
 
 
-def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
+def sendPosts(postid, textOfPost, photo_url_list, docs_list):
     """Checks the type of post and sends it to Telegram in a suitable method
 
     Args:
@@ -333,15 +282,13 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
         textOfPost (string): Post text with links to videos and other links from post attachments
         photo_url_list (list): Photo URL list
         docs_list (list): List of urls to docs
-        gif_link ([type]): Doesnt work for now
-        repost[0] (string): Used to determine if it is a post or repost
     """
 
     def startSending():
         try:
             if len(photo_url_list) == 0:
                 addLog("i", f"[id:{postid}] Bot is trying to send text post")
-                sendTextPost(repost[0])
+                sendTextPost()
             elif len(photo_url_list) == 1:
                 addLog("i", f"[id:{postid}] Bot is trying to send post with photo")
                 sendPhotoPost()
@@ -357,43 +304,22 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
                 f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> startSending(): {str(ex)}",
             )
 
-    def sendTextPost(type_of_post):
+    def sendTextPost():
         try:
             if textOfPost:
-                if type_of_post == "post":
-                    if len(textOfPost) < 4096:
-                        bot.send_message(
-                            config.tgChannel, textOfPost, parse_mode="HTML"
-                        )
-                    else:
-                        bot.send_message(
-                            config.tgChannel,
-                            f"{textOfPost[:4090]} (...)",
-                            parse_mode="HTML",
-                        )
-                        bot.send_message(
-                            config.tgChannel,
-                            f"(...) {textOfPost[4090:]}",
-                            parse_mode="HTML",
-                        )
-                elif type_of_post == "repost":
-                    if len(textOfPost) < 4096:
-                        bot.send_message(
-                            config.tgChannel,
-                            textOfPost,
-                            parse_mode="HTML",
-                        )
-                    else:
-                        bot.send_message(
-                            config.tgChannel,
-                            f"{textOfPost[:4090]} (...)",
-                            parse_mode="HTML",
-                        )
-                        bot.send_message(
-                            config.tgChannel,
-                            f"(...) {textOfPost[4090:]}",
-                            parse_mode="HTML",
-                        )
+                if len(textOfPost) < 4096:
+                    bot.send_message(config.tgChannel, textOfPost, parse_mode="HTML")
+                else:
+                    bot.send_message(
+                        config.tgChannel,
+                        f"{textOfPost[:4090]} (...)",
+                        parse_mode="HTML",
+                    )
+                    bot.send_message(
+                        config.tgChannel,
+                        f"(...) {textOfPost[4090:]}",
+                        parse_mode="HTML",
+                    )
                 addLog("i", f"[id:{postid}] Text post sent")
             else:
                 addLog("i", f"[id:{postid}] Text post skipped because it is empty")
@@ -405,7 +331,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
                 )
                 addLog("i", f"[id:{postid}] Bot trying to resend message to user")
                 time.sleep(3)
-                sendTextPost(type_of_post)
+                sendTextPost()
             addLog(
                 "e",
                 f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendTextPost(): {str(ex)}",
@@ -420,24 +346,10 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
                 addLog("i", f"[id:{postid}] Text post (≤1024) with photo sent")
             else:
                 PostWithPhoto = f'<a href="{photo_url_list[0]}"> </a>{textOfPost}'
-                if len(PostWithPhoto) > 1024 and len(PostWithPhoto) <= 4096:
+                if len(PostWithPhoto) <= 4096:
                     bot.send_message(config.tgChannel, PostWithPhoto, parse_mode="HTML")
-                elif len(PostWithPhoto) > 4096:
-                    if len(textOfPost) < 4096:
-                        bot.send_message(
-                            config.tgChannel, textOfPost, parse_mode="HTML"
-                        )
-                    else:
-                        bot.send_message(
-                            config.tgChannel,
-                            f"{textOfPost[:4090]} (...)",
-                            parse_mode="HTML",
-                        )
-                        bot.send_message(
-                            config.tgChannel,
-                            f"(...) {textOfPost[4090:]}",
-                            parse_mode="HTML",
-                        )
+                else:
+                    sendTextPost()
                     bot.send_photo(config.tgChannel, photo_url_list[0])
                 addLog("i", f"[id:{postid}] Text post (>1024) with photo sent")
         except Exception as ex:
@@ -466,33 +378,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list, gif_link, *repost):
                 photo_list[0].caption = textOfPost
                 photo_list[0].parse_mode = "HTML"
             elif len(textOfPost) > 1024:
-                if len(textOfPost) <= 4096:
-                    bot.send_message(config.tgChannel, textOfPost, parse_mode="HTML")
-                else:
-                    if repost[0] == "post":
-                        bot.send_message(
-                            config.tgChannel,
-                            f"{textOfPost[:4090]} (...)",
-                            parse_mode="HTML",
-                        )
-                        bot.send_message(
-                            config.tgChannel,
-                            f"(...) {textOfPost[4090:]}",
-                            parse_mode="HTML",
-                        )
-                    elif repost[0] == "repost":
-                        bot.send_message(
-                            config.tgChannel,
-                            f"{textOfPost[:4086]}</i> (...)",
-                            parse_mode="HTML",
-                            disable_web_page_preview=True,
-                        )
-                        bot.send_message(
-                            config.tgChannel,
-                            f"(...) <i>{textOfPost[4086:]}",
-                            parse_mode="HTML",
-                            disable_web_page_preview=True,
-                        )
+                sendTextPost()
             bot.send_media_group(config.tgChannel, photo_list)
             addLog("i", f"[id:{postid}] Text post with photos sent")
         except Exception as ex:
@@ -554,13 +440,22 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
         if links and links != [None]:
             for link in links:
                 if link not in textOfPost:
-                    if first_link:
-                        textOfPost = f'<a href="{link}"> </a>{textOfPost}\n'
-                        first_link = False
-                    textOfPost += f"\n{link}"
+                    if textOfPost:
+                        if first_link:
+                            textOfPost = f'<a href="{link}"> </a>{textOfPost}\n'
+                            first_link = False
+                        textOfPost += f"\n{link}"
+                    else:
+                        if first_link:
+                            textOfPost += link
+                            first_link = False
+                        else:
+                            textOfPost += f"\n{link}"
 
     if repost[0] == "repost":
-        textOfPost = f'<a href="{repost[1]}"><b>REPOST ↓ {repost[2]}</b></a>\n\n<i>{textOfPost}</i>'
+        textOfPost = (
+            f'<a href="{repost[1]}"><b>REPOST ↓ {repost[2]}</b></a>\n\n{textOfPost}'
+        )
     try:
         addLinks(videos_list)
         addLinks(links_list)
@@ -589,34 +484,25 @@ def checkNewPost():
     try:
         feed = getData()
         addLog("i", f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
-        # continue if we received data
         if feed is not None:
-            entries = feed
-            try:
-                # if the post is pinned, skip it
-                pinned = entries[0]["is_pinned"]
-                # and call parsePosts
+            if "is_pinned" in feed[0]:
                 config.isPinned = True
-                parsePosts(entries[1:], last_id)
-            except KeyError:
+                parsePosts(feed[1:], last_id)
+            else:
                 config.isPinned = False
-                parsePosts(entries, last_id)
-            # write new last_id to file
+                parsePosts(feed, last_id)
             with open("last_known_id.txt", "w") as file:
-                try:
-                    pinned = entries[0]["is_pinned"]
-                    file.write(str(entries[1]["id"]))
-                    addLog("i", f"New last id of vk post is {entries[1]['id']}")
-                except KeyError:
-                    file.write(str(entries[0]["id"]))
-                    addLog("i", f"New last id of vk post is {entries[0]['id']}")
+                if "is_pinned" in feed[0]:
+                    file.write(str(feed[1]["id"]))
+                    addLog("i", f"New last id of vk post is {feed[1]['id']}")
+                else:
+                    file.write(str(feed[0]["id"]))
+                    addLog("i", f"New last id of vk post is {feed[0]['id']}")
     except Exception as ex:
         addLog(
             "e", f"Exception in type {type(ex).__name__} in checkNewPost(): {str(ex)}"
         )
-        pass
     addLog("i", "Scanning finished")
-    return
 
 
 def ready_for_html(text):
@@ -640,26 +526,6 @@ def ready_for_html(text):
     )
 
 
-def cleaning(when):
-    """Cleaning the temp folder with files inside
-    or creates an empty temp folder for future temp files inside
-    """
-    try:
-        if when == "before":
-            if "temp" in os.listdir():
-                shutil.rmtree("temp")
-                os.mkdir("temp")
-            elif "temp" not in os.listdir():
-                os.mkdir("temp")
-        elif when == "after":
-            shutil.rmtree("temp")
-    except Exception as ex:
-        addLog(
-            "e", f"Something [{type(ex).__name__}] went wrong in cleaning(): {str(ex)}"
-        )
-
-
-# method for checking if a bot is a channel administrator
 def isBotChannelAdmin(specific_bot, specific_channel):
     """Checks if the bot is a channel administrator
 
