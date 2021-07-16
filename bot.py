@@ -87,13 +87,13 @@ def parsePosts(items, last_id):
         if config.skipAdsPosts and item["marked_as_ads"] == 1:
             addLog(
                 "i",
-                f"[id:{item['id']}]Post was skipped because it was flagged as ad",
+                f"[id:{item['id']}] Post was skipped because it was flagged as ad",
             )
             continue
         if config.skipPostsWithCopyright and "copyright" in item:
             addLog(
                 "i",
-                f"[id:{item['id']}]Post was skipped because it has copyright",
+                f"[id:{item['id']}] Post was skipped because it has copyright",
             )
             continue
         addLog("i", f"[id:{item['id']}] Bot is working with this post")
@@ -107,7 +107,7 @@ def parsePosts(items, last_id):
             except Exception as ex:
                 addLog(
                     "e",
-                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getLink(): {str(ex)}',
+                    f'[id:{item["id"]}] [{type(ex).__name__}] in getLink(): {str(ex)}',
                 )
 
         def getVideo(attachment):
@@ -135,7 +135,7 @@ def parsePosts(items, last_id):
             except Exception as ex:
                 addLog(
                     "e",
-                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getVideo(): {str(ex)}',
+                    f'[id:{item["id"]}] [{type(ex).__name__}] in getVideo(): {str(ex)}',
                 )
 
         def getPhoto(attachment):
@@ -161,7 +161,7 @@ def parsePosts(items, last_id):
             except Exception as ex:
                 addLog(
                     "e",
-                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getPhoto(): {str(ex)}',
+                    f'[id:{item["id"]}] [{type(ex).__name__}] in getPhoto(): {str(ex)}',
                 )
 
         def getDoc(attachment):
@@ -179,7 +179,7 @@ def parsePosts(items, last_id):
             except Exception as ex:
                 addLog(
                     "e",
-                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> getPublicNameById(): {str(ex)}',
+                    f'[id:{item["id"]}] [{type(ex).__name__}] in getPublicNameById(): {str(ex)}',
                 )
                 return ""
 
@@ -205,7 +205,7 @@ def parsePosts(items, last_id):
             except Exception as ex:
                 addLog(
                     "e",
-                    f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts() --> parseAttachments(): {str(ex)}',
+                    f'[id:{item["id"]}] [{type(ex).__name__}] in parseAttachments(): {str(ex)}',
                 )
 
         try:
@@ -270,7 +270,7 @@ def parsePosts(items, last_id):
         except Exception as ex:
             addLog(
                 "e",
-                f'[id:{item["id"]}] Something [{type(ex).__name__}] went wrong in parsePosts(): {str(ex)}',
+                f'[id:{item["id"]}] [{type(ex).__name__}] in parsePosts(): {str(ex)}',
             )
 
 
@@ -301,7 +301,7 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list):
         except Exception as ex:
             addLog(
                 "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> startSending(): {str(ex)}",
+                f"[id:{postid}] [{type(ex).__name__}] in startSending(): {str(ex)}",
             )
 
     def sendTextPost():
@@ -327,14 +327,14 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list):
             if type(ex).__name__ == "ConnectionError":
                 addLog(
                     "w",
-                    f"[id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendTextPost(): {str(ex)}",
+                    f"[id:{postid}] [{type(ex).__name__}] in sendTextPost(): {str(ex)}",
                 )
                 addLog("i", f"[id:{postid}] Bot trying to resend message to user")
                 time.sleep(3)
                 sendTextPost()
             addLog(
                 "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendTextPost(): {str(ex)}",
+                f"[id:{postid}] [{type(ex).__name__}] in sendTextPost(): {str(ex)}",
             )
 
     def sendPhotoPost():
@@ -353,18 +353,14 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list):
                     bot.send_photo(config.tgChannel, photo_url_list[0])
                 addLog("i", f"[id:{postid}] Text post (>1024) with photo sent")
         except Exception as ex:
+            addLog(
+                "e",
+                f"[id:{postid}] [{type(ex).__name__}] in sendPhotoPost(): {str(ex)}",
+            )
             if type(ex).__name__ == "ConnectionError":
-                addLog(
-                    "w",
-                    f"[id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendPhotoPost(): {str(ex)}",
-                )
                 addLog("i", f"[id:{postid}] Bot trying to resend message to user")
                 time.sleep(3)
                 sendPhotoPost()
-            addLog(
-                "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendPhotoPost(): {str(ex)}",
-            )
 
     def sendPhotosPost():
         try:
@@ -382,18 +378,14 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list):
             bot.send_media_group(config.tgChannel, photo_list)
             addLog("i", f"[id:{postid}] Text post with photos sent")
         except Exception as ex:
+            addLog(
+                "e",
+                f"[id:{postid}] [{type(ex).__name__}] in sendPhotosPost(): {str(ex)}",
+            )
             if type(ex).__name__ == "ConnectionError":
-                addLog(
-                    "w",
-                    f"[id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendPhotosPost(): {str(ex)}",
-                )
                 addLog("i", f"[id:{postid}] Bot trying to resend message to user")
                 time.sleep(3)
                 sendPhotosPost()
-            addLog(
-                "e",
-                f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendPhotosPost(): {str(ex)}",
-            )
 
     def sendDocs():
         def sendDoc(doc):
@@ -401,18 +393,14 @@ def sendPosts(postid, textOfPost, photo_url_list, docs_list):
                 bot.send_document(config.tgChannel, doc)
                 addLog("i", f"[id:{postid}] Document sent")
             except Exception as ex:
+                addLog(
+                    "e",
+                    f"[id:{postid}] [{type(ex).__name__}] in sendDocs(): {str(ex)}",
+                )
                 if type(ex).__name__ == "ConnectionError":
-                    addLog(
-                        "w",
-                        f"[id:{postid}] {type(ex).__name__} went wrong in sendPosts() --> sendDocs(): {str(ex)}",
-                    )
                     addLog("i", f"[id:{postid}] Bot trying to resend message to user")
                     time.sleep(3)
                     sendDoc(doc)
-                addLog(
-                    "e",
-                    f"[id:{postid}] Something [{type(ex).__name__}] went wrong in sendPosts() --> sendDocs(): {str(ex)}",
-                )
 
         for doc in docs_list:
             sendDoc(doc)
@@ -463,7 +451,7 @@ def compileLinksAndText(postid, textOfPost, links_list, videos_list, *repost):
     except Exception as ex:
         addLog(
             "e",
-            f"[id:{postid}] Something [{type(ex).__name__}] went wrong in compileLinksAndText(): {str(ex)}",
+            f"[id:{postid}] [{type(ex).__name__}] in compileLinksAndText(): {str(ex)}",
         )
     return textOfPost
 
@@ -483,12 +471,13 @@ def checkNewPost():
         addLog("i", f"Last id of vk post is {last_id}")
     try:
         feed = getData()
-        addLog("i", f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
         if feed is not None:
             if "is_pinned" in feed[0]:
+                addLog("i", f"Got some posts [id:{feed[-1]['id']}-{feed[1]['id']}]")
                 config.isPinned = True
                 parsePosts(feed[1:], last_id)
             else:
+                addLog("i", f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
                 config.isPinned = False
                 parsePosts(feed, last_id)
             with open("last_known_id.txt", "w") as file:
@@ -499,9 +488,7 @@ def checkNewPost():
                     file.write(str(feed[0]["id"]))
                     addLog("i", f"New last id of vk post is {feed[0]['id']}")
     except Exception as ex:
-        addLog(
-            "e", f"Exception in type {type(ex).__name__} in checkNewPost(): {str(ex)}"
-        )
+        addLog("e", f"[{type(ex).__name__}] in checkNewPost(): {str(ex)}")
     addLog("i", "Scanning finished")
 
 
@@ -653,10 +640,6 @@ if __name__ == "__main__":
         "[%(asctime)s] %(filename)s:%(lineno)d %(levelname)s - %(message)s"
     )
 
-    # file_handler = logging.FileHandler("dev.log")
-    # file_handler.setLevel(logging.INFO)
-    # file_handler.setFormatter(formatter)
-
     stream_handler = logging.StreamHandler()
     stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(formatter)
@@ -668,7 +651,6 @@ if __name__ == "__main__":
     tr_file_handler.setLevel(logging.INFO)
     tr_file_handler.setFormatter(formatter)
 
-    # logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
     logger.addHandler(tr_file_handler)
 
