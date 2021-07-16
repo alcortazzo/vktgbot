@@ -576,9 +576,7 @@ def sendLog(log_message):
             bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode="HTML")
         except Exception as ex:
             global logger
-            logger.error(
-                f"Something [{type(ex).__name__}] went wrong in sendLog(): {str(ex)}"
-            )
+            logger.error(f"[{type(ex).__name__}] in sendLog(): {str(ex)}")
 
 
 def blacklist_check(text):
@@ -659,7 +657,7 @@ if __name__ == "__main__":
             checkNewPost()
             addLog(
                 "i",
-                "Script went to sleep for " + str(config.timeSleep) + " seconds\n\n",
+                f"Script went to sleep for {config.timeSleep} seconds\n\n",
             )
             time.sleep(int(config.timeSleep))
     elif config.singleStart:
