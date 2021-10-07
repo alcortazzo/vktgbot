@@ -13,21 +13,21 @@ import eventlet
 from telebot import TeleBot, types, apihelper
 from logging.handlers import TimedRotatingFileHandler
 
-bot = TeleBot(config.tgBotToken)
+bot = TeleBot(config.tg_bot_token)
 
-if len(str(config.tgLogChannel)) > 5:
-    if config.tgBotForLogToken != "":
-        bot_2 = TeleBot(config.tgBotForLogToken)
+if len(str(config.tg_log_channel)) > 5:
+    if config.tg_bot_for_log_token != "":
+        bot_2 = TeleBot(config.tg_bot_for_log_token)
     else:
-        bot_2 = TeleBot(config.tgBotToken)
+        bot_2 = TeleBot(config.tg_bot_token)
     is_bot_for_log = True
 else:
     is_bot_for_log = False
 
 
-if config.proxyEnable:
+if config.proxy_enable:
     apihelper.proxy = {
-        "https": f"socks5://{config.proxyLogin}:{config.proxyPass}@{config.proxyIp}:{config.proxyPort}"
+        "https": f"socks5://{config.proxy_login}:{config.proxy_pass}@{config.proxy_ip}:{config.proxy_port}"
     }
 
 
@@ -36,19 +36,19 @@ def get_data():
 
     Returns:
         List of N posts from vk.com/xxx, where
-            N = config.reqCount
-            xxx = config.vkDomain
+            N = config.req_count
+            xxx = config.vk_domain
     """
     timeout = eventlet.Timeout(20)
     try:
         data = requests.get(
             "https://api.vk.com/method/wall.get",
             params={
-                "access_token": config.vkToken,
+                "access_token": config.vk_token,
                 "v": config.reqVer,
-                "domain": config.vkDomain,
-                "filter": config.reqFilter,
-                "count": config.reqCount,
+                "domain": config.vk_domain,
+                "filter": config.req_filter,
+                "count": config.req_count,
             },
         )
         return data.json()["response"]["items"]
@@ -64,7 +64,7 @@ def parse_posts(items, last_id):
         * Сhecks post id to make sure it is larger than the one written in the last_known_id.txt
         * Parses all attachments of post or repost
         * Calls 'compile_links_and_text()' to compile links to videos and other links from post to post text
-        * Calls 'send_posts()' to send post to Telegram channel (config.tgChannel)
+        * Calls 'send_posts()' to send post to Telegram channel (config.tg_channel)
 
     Args:
         items (list): List of posts received from VK
@@ -83,13 +83,13 @@ def parse_posts(items, last_id):
             add_log("i", f"[id:{item['id']}] Post was skipped due to whitelist filter")
             continue
 
-        if config.skipAdsPosts and item["marked_as_ads"] == 1:
+        if config.skip_ads_posts and item["marked_as_ads"] == 1:
             add_log(
                 "i",
                 f"[id:{item['id']}] Post was skipped because it was flagged as ad",
             )
             continue
-        if config.skipPostsWithCopyright and "copyright" in item:
+        if config.skip_copyrighted_post and "copyright" in item:
             add_log(
                 "i",
                 f"[id:{item['id']}] Post was skipped because it has copyright",
@@ -114,7 +114,7 @@ def parse_posts(items, last_id):
                 try:
                     data = requests.get(
                         f"https://api.vk.com/method/video.get?"
-                        f"access_token={config.vkToken}&"
+                        f"access_token={config.vk_token}&"
                         f"v={config.reqVer}&"
                         f"videos={owner_id}_{video_id}_{access_key}"
                     )
@@ -175,7 +175,7 @@ def parse_posts(items, last_id):
         def get_public_name_by_id(id):
             try:
                 data = requests.get(
-                    f"https://api.vk.com/method/groups.getById?access_token={config.vkToken}&v=5.103&group_id={id}"
+                    f"https://api.vk.com/method/groups.getById?access_token={config.vk_token}&v=5.103&group_id={id}"
                 )
                 return data.json()["response"][0]["name"]
             except Exception as ex:
@@ -312,15 +312,15 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
         try:
             if text_of_post:
                 if len(text_of_post) < 4096:
-                    bot.send_message(config.tgChannel, text_of_post, parse_mode="HTML")
+                    bot.send_message(config.tg_channel, text_of_post, parse_mode="HTML")
                 else:
                     bot.send_message(
-                        config.tgChannel,
+                        config.tg_channel,
                         f"{text_of_post[:4090]} (...)",
                         parse_mode="HTML",
                     )
                     bot.send_message(
-                        config.tgChannel,
+                        config.tg_channel,
                         f"(...) {text_of_post[4090:]}",
                         parse_mode="HTML",
                     )
@@ -345,18 +345,21 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
         try:
             if len(text_of_post) <= 1024:
                 bot.send_photo(
-                    config.tgChannel, photo_url_list[0], text_of_post, parse_mode="HTML"
+                    config.tg_channel,
+                    photo_url_list[0],
+                    text_of_post,
+                    parse_mode="HTML",
                 )
                 add_log("i", f"[id:{postid}] Text post (≤1024) with photo sent")
             else:
                 post_with_photo = f'<a href="{photo_url_list[0]}"> </a>{text_of_post}'
                 if len(post_with_photo) <= 4096:
                     bot.send_message(
-                        config.tgChannel, post_with_photo, parse_mode="HTML"
+                        config.tg_channel, post_with_photo, parse_mode="HTML"
                     )
                 else:
                     send_text_post()
-                    bot.send_photo(config.tgChannel, photo_url_list[0])
+                    bot.send_photo(config.tg_channel, photo_url_list[0])
                 add_log("i", f"[id:{postid}] Text post (>1024) with photo sent")
         except Exception as ex:
             add_log(
@@ -381,7 +384,7 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
                 photo_list[0].parse_mode = "HTML"
             elif len(text_of_post) > 1024:
                 send_text_post()
-            bot.send_media_group(config.tgChannel, photo_list)
+            bot.send_media_group(config.tg_channel, photo_list)
             add_log("i", f"[id:{postid}] Text post with photos sent")
         except Exception as ex:
             add_log(
@@ -396,7 +399,7 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
     def send_docs():
         def send_doc(doc):
             try:
-                bot.send_document(config.tgChannel, doc)
+                bot.send_document(config.tg_channel, doc)
                 add_log("i", f"[id:{postid}] Document sent")
             except Exception as ex:
                 add_log(
@@ -466,7 +469,7 @@ def check_new_post():
     """Gets list of posts from get_data(),
     compares post's id with id from the last_known_id.txt file.
     Sends list of posts to parse_posts(), writes new last id into file"""
-    if not check_admin_status(bot, config.tgChannel):
+    if not check_admin_status(bot, config.tg_channel):
         pass
     add_log("i", "Scanning for new posts")
     with open("last_known_id.txt", "r") as file:
@@ -480,11 +483,11 @@ def check_new_post():
         if feed is not None:
             if "is_pinned" in feed[0]:
                 add_log("i", f"Got some posts [id:{feed[-1]['id']}-{feed[1]['id']}]")
-                config.isPinned = True
+                config._is_pinned_post = True
                 parse_posts(feed[1:], last_id)
             else:
                 add_log("i", f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
-                config.isPinned = False
+                config._is_pinned_post = False
                 parse_posts(feed, last_id)
             with open("last_known_id.txt", "w") as file:
                 if "is_pinned" in feed[0]:
@@ -523,8 +526,8 @@ def check_admin_status(specific_bot, specific_channel):
     """Checks if the bot is a channel administrator
 
     Args:
-        specific_bot (string): Defines which bot will be checked (config.tgBotToken / config.tgBotForLogToken)
-        specific_channel (string): Defines which channel will be checked (config.tgChannel / config.tgLogChannel)
+        specific_bot (string): Defines which bot will be checked (config.tg_bot_token / config.tg_bot_for_log_token)
+        specific_channel (string): Defines which channel will be checked (config.tg_channel / config.tg_log_channel)
     """
     try:
         _ = specific_bot.get_chat_administrators(specific_channel)
@@ -556,13 +559,13 @@ def add_log(type_of_log, text):
         logger.error(text)
 
     global is_bot_for_log
-    if is_bot_for_log and check_admin_status(bot_2, config.tgLogChannel):
+    if is_bot_for_log and check_admin_status(bot_2, config.tg_log_channel):
         time.sleep(1)
         send_log(log_message)
 
 
 def send_log(log_message):
-    """Sends logs to config.tgLogChannel channel
+    """Sends logs to config.tg_log_channel channel
 
     Args:
         log_message (string): Logging text
@@ -573,13 +576,15 @@ def send_log(log_message):
             log_message_temp = (
                 "<code>"
                 + log_message
-                + "</code>\ntgChannel = "
-                + config.tgChannel
-                + "\nvkDomain = <code>"
-                + config.vkDomain
+                + "</code>\ntg_channel = "
+                + config.tg_channel
+                + "\nvk_domain = <code>"
+                + config.vk_domain
                 + "</code>"
             )
-            bot_2.send_message(config.tgLogChannel, log_message_temp, parse_mode="HTML")
+            bot_2.send_message(
+                config.tg_log_channel, log_message_temp, parse_mode="HTML"
+            )
         except Exception as ex:
             global logger
             logger.error(f"[{type(ex).__name__}] in send_log(): {str(ex)}")
@@ -634,8 +639,8 @@ def check_python_version():
 if __name__ == "__main__":
     check_python_version()
 
-    if not os.path.exists(f"./{config.logFolderName}"):
-        os.makedirs(f"./{config.logFolderName}")
+    if not os.path.exists(f"./{config.log_folder}"):
+        os.makedirs(f"./{config.log_folder}")
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
@@ -649,7 +654,7 @@ if __name__ == "__main__":
     stream_handler.setFormatter(formatter)
 
     tr_file_handler = TimedRotatingFileHandler(
-        f"./{config.logFolderName}/{config.logFileName}", "midnight", interval=1
+        f"./{config.log_folder}/{config.log_file}", "midnight", interval=1
     )
     tr_file_handler.suffix = "%Y%m%d"
     tr_file_handler.setLevel(logging.INFO)
@@ -658,14 +663,14 @@ if __name__ == "__main__":
     logger.addHandler(stream_handler)
     logger.addHandler(tr_file_handler)
 
-    if not config.singleStart:
+    if not config.single_start:
         while True:
             check_new_post()
             add_log(
                 "i",
-                f"Script went to sleep for {config.timeSleep} seconds\n\n",
+                f"Script went to sleep for {config.time_to_sleep} seconds\n\n",
             )
-            time.sleep(int(config.timeSleep))
-    elif config.singleStart:
+            time.sleep(int(config.time_to_sleep))
+    else:
         check_new_post()
         add_log("i", "Script exited.")
