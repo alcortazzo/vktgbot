@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+
 # Link or ID of the Telegram channel.
 # for example:
 # tgChannel = "@durov"
@@ -92,3 +95,29 @@ proxy_port = "1234"
 log_folder = "logs"
 # Log file name
 log_file = "dev.log"
+
+
+"""Initializing values from the environment, if it exists"""
+load_dotenv("./build/.env")
+tg_channel = os.getenv("VAR_TG_CHANNEL", tg_channel)
+tg_bot_token = os.getenv("VAR_TG_BOT_TOKEN", tg_bot_token)
+vk_token = os.getenv("VAR_VK_TOKEN", vk_token)
+vk_domain = os.getenv("VAR_VK_DOMAIN", vk_domain)
+tg_log_channel = os.getenv("VAR_TG_LOG_CHANNEL", tg_log_channel)
+tg_bot_for_log_token = os.getenv("VAR_TG_BOT_FOR_LOG_TOKEN", tg_bot_for_log_token)
+req_version = os.getenv("VAR_REQ_VERSION", req_version)
+req_count = os.getenv("VAR_REQ_COUNT", req_count)
+req_filter = os.getenv("VAR_REQ_FILTER", req_filter)
+single_start = os.getenv("VAR_SINGLE_START", single_start)
+time_to_sleep = os.getenv("VAR_TIME_TO_SLEEP", time_to_sleep)
+skip_ads_posts = os.getenv("VAR_SKIP_ADS_POSTS", skip_ads_posts)
+skip_copyrighted_post = os.getenv("VAR_SKIP_COPYRIGHTED_POST", skip_copyrighted_post)
+WHITELIST = os.getenv("VAR_WHITELIST", WHITELIST)
+BLACKLIST = os.getenv("VAR_BLACKLIST", BLACKLIST)
+proxy_enable = os.getenv("VAR_PROXY_ENABLE", proxy_enable)
+proxy_login = os.getenv("VAR_PROXY_LOGIN", proxy_login)
+proxy_pass = os.getenv("VAR_PROXY_PROXY_PASS", proxy_pass)
+proxy_ip = os.getenv("VAR_PROXY_PROXY_IP", proxy_ip)
+proxy_port = os.getenv("VAR_PROXY_PROXY_PORT", proxy_port)
+log_folder = os.getenv("VAR_LOG_FOLDER_NAME", log_folder)
+log_file = os.getenv("VAR_LOG_FILENAME", log_file)
