@@ -485,17 +485,18 @@ def check_new_post():
                 add_log("i", f"Got some posts [id:{feed[-1]['id']}-{feed[1]['id']}]")
                 config._is_pinned_post = True
                 parse_posts(feed[1:], last_id)
+                new_last_id = feed[1]["id"]
             else:
                 add_log("i", f"Got some posts [id:{feed[-1]['id']}-{feed[0]['id']}]")
                 config._is_pinned_post = False
                 parse_posts(feed, last_id)
-            with open("last_known_id.txt", "w") as file:
-                if "is_pinned" in feed[0]:
-                    file.write(str(feed[1]["id"]))
-                    add_log("i", f"New last id of vk post is {feed[1]['id']}")
-                else:
-                    file.write(str(feed[0]["id"]))
-                    add_log("i", f"New last id of vk post is {feed[0]['id']}")
+                new_last_id = feed[0]["id"]
+            if new_last_id > last_id:
+                with open("last_known_id.txt", "w") as file:
+                    file.write(str(new_last_id))
+                add_log("i", f"New last id of vk post is {new_last_id}")
+            else:
+                add_log("i", f"Last id remains {new_last_id}")
     except Exception as ex:
         add_log("e", f"[{type(ex).__name__}] in check_new_post(): {str(ex)}")
     add_log("i", "Scanning finished")
