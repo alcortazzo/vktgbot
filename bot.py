@@ -45,7 +45,7 @@ def get_data():
             "https://api.vk.com/method/wall.get",
             params={
                 "access_token": config.vk_token,
-                "v": config.reqVer,
+                "v": config.req_version,
                 "domain": config.vk_domain,
                 "filter": config.req_filter,
                 "count": config.req_count,
@@ -113,11 +113,14 @@ def parse_posts(items, last_id):
             def get_video_url(owner_id, video_id, access_key):
                 try:
                     data = requests.get(
-                        f"https://api.vk.com/method/video.get?"
-                        f"access_token={config.vk_token}&"
-                        f"v={config.reqVer}&"
-                        f"videos={owner_id}_{video_id}_{access_key}"
+                        "https://api.vk.com/method/video.get",
+                        params={
+                            "access_token": config.vk_token,
+                            "v": config.req_version,
+                            "videos": f"{owner_id}_{video_id}_{access_key}",
+                        },
                     )
+
                     return data.json()["response"]["items"][0]["files"]["external"]
                 except Exception:
                     return None
@@ -172,10 +175,15 @@ def parse_posts(items, last_id):
             doc_title = attachment["doc"]["title"]
             return docurl
 
-        def get_public_name_by_id(id):
+        def get_public_name_by_id(owner_id):
             try:
                 data = requests.get(
-                    f"https://api.vk.com/method/groups.getById?access_token={config.vk_token}&v=5.103&group_id={id}"
+                    "https://api.vk.com/method/groups.getById",
+                    params={
+                        "access_token": config.vk_token,
+                        "v": config.req_version,
+                        "group_id": owner_id,
+                    },
                 )
                 return data.json()["response"][0]["name"]
             except Exception as ex:
@@ -300,7 +308,7 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
                 add_log("i", f"[id:{postid}] Bot is trying to send post with photos")
                 send_photos_post()
 
-            if docs_list != []:
+            if docs_list:
                 send_docs()
         except Exception as ex:
             add_log(
