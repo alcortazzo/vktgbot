@@ -97,6 +97,8 @@ def parse_posts(items, last_id):
             continue
         add_log("i", f"[id:{item['id']}] Bot is working with this post")
 
+        prepare_temp_folder()
+
         def get_link(attachment):
             try:
                 link_object = attachment["link"]["url"]
@@ -169,11 +171,34 @@ def parse_posts(items, last_id):
                     f'[id:{item["id"]}] [{type(ex).__name__}] in get_photo(): {str(ex)}',
                 )
 
-        def get_doc(attachment):
-            docurl = attachment["doc"]["url"]
-            extension = attachment["doc"]["ext"]
-            doc_title = attachment["doc"]["title"]
-            return docurl
+        def get_doc(document):
+            document_types = {
+                1: "text_document",
+                2: "archive",
+                3: "gif",
+                4: "image",
+                5: "audio",
+                6: "video",
+                7: "ebook",
+                8: "unknown",
+            }
+            document_type = document_types[document["type"]]
+            if document["size"] > 50000000:
+                add_log("i" f"Document [{document['type']}] skipped because it > 50 MB")
+                return
+            if document_type == "image" or document_type == "gif":
+                pass
+            elif document_type == "text_document" or document_type == "ebook":
+                response = requests.get(document["url"])
+
+                with open(f"./temp/{document['title']}", "wb") as file:
+                    file.write(response.content)
+
+            return {
+                "type": document_type,
+                "title": document["title"],
+                "url": document["url"],
+            }
 
         def get_public_name_by_id(owner_id):
             try:
@@ -193,17 +218,17 @@ def parse_posts(items, last_id):
                 )
                 return ""
 
-        def parse_attachments(item, linklist, vidlist, photolist, docslist):
+        def parse_attachments(item, links_list, vids_list, photos_list, docs_list):
             try:
                 for attachment in item["attachments"]:
                     if attachment["type"] == "link":
-                        linklist.append(get_link(attachment))
+                        links_list.append(get_link(attachment))
                     elif attachment["type"] == "video":
                         temp_vid = get_video(attachment)
                         if temp_vid is not None:
-                            vidlist.append(temp_vid)
+                            vids_list.append(temp_vid)
                     elif attachment["type"] == "photo":
-                        photolist.append(
+                        photos_list.append(
                             re.sub(
                                 "&([a-zA-Z]+(_[a-zA-Z]+)+)=([a-zA-Z0-9-_]+)",
                                 "",
@@ -211,7 +236,9 @@ def parse_posts(items, last_id):
                             )
                         )
                     elif attachment["type"] == "doc":
-                        docslist.append(get_doc(attachment))
+                        doc_data = get_doc(attachment["doc"])
+                        if doc_data:
+                            docs_list.append(doc_data)
             except Exception as ex:
                 add_log(
                     "e",
@@ -405,10 +432,15 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
                 send_photos_post()
 
     def send_docs():
-        def send_doc(doc):
+        def send_doc(document):
             try:
-                bot.send_document(config.tg_channel, doc)
-                add_log("i", f"[id:{postid}] Document sent")
+                if document["type"] == "image" or document["type"] == "gif":
+                    bot.send_document(config.tg_channel, document)
+                elif document["type"] == "text_document" or document["type"] == "ebook":
+                    with open(f"./temp/{document['title']}", "rb") as file:
+                        bot.send_document(config.tg_channel, file)
+
+                add_log("i", f"[id:{postid}] Document [{document['type']}] sent")
             except Exception as ex:
                 add_log(
                     "e",
@@ -417,10 +449,10 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
                 if type(ex).__name__ == "ConnectionError":
                     add_log("i", f"[id:{postid}] Bot trying to resend message to user")
                     time.sleep(3)
-                    send_doc(doc)
+                    send_doc(document)
 
-        for doc in docs_list:
-            send_doc(doc)
+        for document in docs_list:
+            send_doc(document)
 
     start_sending()
 
@@ -634,6 +666,15 @@ def whitelist_check(text):
         return True
 
     return False
+
+
+def prepare_temp_folder():
+    if "temp" in os.listdir():
+        for root, dirs, files in os.walk("temp"):
+            for file in files:
+                os.remove(os.path.join(root, file))
+    else:
+        os.mkdir("temp")
 
 
 def check_python_version():
