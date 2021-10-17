@@ -1,5 +1,5 @@
 # Made by @alcortazzo
-# v2.4
+# v2.5
 
 import os
 import re
@@ -453,6 +453,8 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
 
         for document in docs_list:
             send_doc(document)
+            if len(docs_list) > 1:
+                time.sleep(1)
 
     start_sending()
 
@@ -615,13 +617,9 @@ def send_log(log_message):
     if is_bot_for_log:
         try:
             log_message_temp = (
-                "<code>"
-                + log_message
-                + "</code>\ntg_channel = "
-                + config.tg_channel
-                + "\nvk_domain = <code>"
-                + config.vk_domain
-                + "</code>"
+                f"<code>{log_message}</code>\n"
+                f"tg_channel = {config.tg_channel}\n"
+                f"vk_domain = <code>{config.vk_domain}</code>"
             )
             bot_2.send_message(
                 config.tg_log_channel, log_message_temp, parse_mode="HTML"
