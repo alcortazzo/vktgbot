@@ -5,10 +5,10 @@
     <a target="_blank" href="https://github.com/alcortazzo/vktgbot/releases"><img alt="docker image" src="https://img.shields.io/github/v/release/alcortazzo/vktgbot?include_prereleases"></a>
     <a target="_blank" href="LICENSE" title="License: GPL-3.0"><img src="https://img.shields.io/github/license/alcortazzo/vktgbot.svg?color=red"></a>
 </p>    
-<p align="center"><b>Telegram Bot on Python for reposting from VKontakte community pages (group, public page or event page) to Telegram Channels.</b></p>
+<p align="center"><b>Telegram Bot in Python for automated reposting from VKontakte community pages (groups or public pages) to Telegram channels.</b></p>
 
 <p align="center">
-    <a href="#what-is-now-implemented">What is now implemented</a>
+    <a href="#what-bot-can-post-to-telegram">What bot can post to Telegram</a>
     &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
     <a href="#how-bot-works">How bot works</a>
     &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
@@ -19,36 +19,35 @@
 <img src="https://github.com/alcortazzo/vktgbot/blob/master/images/code.png"/>
 </a>
 </p>
-<p align="center"><i>rus: Телеграм бот для парсинга (репоста) постов из пабликов ВК в Телеграм каналы</i></p>
+<p align="center"><i>rus: Телеграм бот для автоматического парсинга (репоста) постов из пабликов ВК в Телеграм каналы</i></p>
 
-## What is now implemented
-|Type of VK post|Is implemented?|What bot will send to Telegram
-|:---:|:---:|:---:|
-|Text post|**Yes**|Text post
-|Text post with photo(s)|**Yes**|Text post with photo(s)
-|Text post with link(s)|**Yes** |Text post with link(s)
-|Text post with (yt/vk) video(s)|**Yes**|Text post with link(s) to video(s)
-|Text post with audios|**~**|Text post **without** audios > **VK-API [restrictions](https://vk.com/dev/audio)**
-|Text post with document(s)|**Yes**|Text post with document(s)|
-|Text post with VK repost|**Yes**|Original post and repost in 2 messages*
-|Text post with polls|**~**|Just text post for now
+## What bot can post to Telegram
+|    Type of VK post    | Can it? |                       Notes                       |
+| :-------------------: | :-----: | :-----------------------------------------------: |
+|     Text of posts     | **Yes** |
+|    Photos of posts    | **Yes** |
+|    Links of posts     | **Yes** |
+| YT/VK videos of posts | **Yes** |      *Bot will attach video links to posts.*      |
+|    Polls of posts     | **No**  |
+|  VK reposts of posts  | **Yes** |
+|       Documents       |  **~**  | The list of document types to post is shown below |
 
-**One message with original post's text and attachments and one message with repost's text and attachments*
-### In addition, bot can skip ads posts if  in `config.py`
+|    Implemented doc types to post    | Not implemented doc types to post |
+| :---------------------------------: | :-------------------------------: |
+| Text documents, Gif, Images, Ebooks | Archives, Audio, Video, *Uknown*  |
+### In addition, the bot can skip advertising posts if in `config.py`
 ```python
-skipAdsPosts = True
+skip_ads_posts = True
 ```
 
 ## How bot works
-* Bot sends and receives request from vk api [get.wall method]
-* Then bot compares the id from *last_known_id.txt* with the id of the last post
-* If `skipAdsPosts = True` in `config.py` bot will skip ads posts
-* If id of the last post is larger than id from *last_known_id.txt* the bot will write a new id to the file and call the function **parsePosts()**
-* **parsePosts()** parses attachments from posts (or reposts if exists) and calls sendPosts() to send them to Telegram
-* Then bot is waiting for the period settled by the user and starts again
+* Bot requests and receives data (posts) from VK via vk api (get.wall method).
+* Then the bot compares ID from *last_known_id.txt* with ID of the last received post.
+* If the ID from the file is less than the ID of the received posts, bot will parse and send new posts to Telegram and write the new ID to the file.
+* The bot then waits for the period set by the user in `config.py` and starts again.
 
 ## Installation & Usage
-### Linux
+### Linux or macOS
 ```bash
 # clone the repo
 $ git clone https://github.com/alcortazzo/vktgbot.git
@@ -90,30 +89,28 @@ python -m pip install -r requirements.txt
 ```
 ### Open **config** file and update the following variables:
 ```python
-tgChannel = '@aaaa'
-tgBotToken = '1234567890:AAA-AaA1aaa1AAaaAa1a1AAAAA-a1aa1-Aa'
-vkToken = '00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0'
-vkDomain = 'bbbb'
+tg_channel = "@aaaa"
+tg_bot_token = "1234567890:AAA-AaA1aaa1AAaaAa1a1AAAAA-a1aa1-Aa"
+vk_token = "00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0"
+vk_domain = "bbbb"
 ```
-* `tgChannel` is the link to channel in telegram `t.me/>>aaaa<<`. **You must add bot to this channel as an administrator**
-* `tgBotToken` is the bot token from [BotFather](https://t.me/BotFather)
-* `vkToken` is your vk **personal** token. [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token)
-  * **You can just use the vk service token** ([HowToGet](https://youtu.be/oGS683RYmg8)), but if you want to repost posts from closed groups or want to repost posts with YouTube videos use personal token.
-* `vkDomain` is the link to vk public `vk.com/>>bbbb<<`
-* `tgLogChannel` link to another channel in telegram if you want to get bot's log message
+* `tg_channel` is link or ID of the Telegram channel. **You must add bot to this channel as an administrator!**
+* `tg_bot_token` is token for your Telegram bot. You can get it here: [BotFather](https://t.me/BotFather).
+* `vk_token` is personal token for your VK profile. You can get it here: [HowToGet](https://github.com/alcortazzo/vktgbot/wiki/How-to-get-personal-access-token).
+* `vk_domain` is part of the link (after vk.com/) to the VK channel. For example, if link is `vk.com/durov`, you should set `= "durov"`.
 #### If Telegram is not available in your country, you should update these variables.
 ```python
-proxyEnable = True
-proxyLogin = "bot"  
-proxyPass = "12345"  
-proxyIp = "myproxy.com"  
-proxyPort = "1234"
+proxy_enable = True
+proxy_login = "bot"  
+proxy_pass = "12345"  
+proxy_ip = "myproxy.com"  
+proxy_port = "1234"
 ```
-#### Open **last_known_id.txt** file and write in it id of the last (not pinned!) post (optional):
-* Example: if link to post is `https://vk.com/wall-22822305_1070803` id of this post will be `1070803`
+#### Open file **last_known_id.txt** and write the ID of the last post (not pinned!) into it:
+* For example, if the link to post is `https://vk.com/wall-22822305_1070803`, then the id of that post will be `1070803`.
 * [PhotoExemple](https://i.imgur.com/eWpso0C.png)
 ### Launch the bot
-#### Linux
+#### Linux or macOS
 ```bash
 $ python3 bot.py
 ```
