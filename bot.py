@@ -186,9 +186,7 @@ def parse_posts(items, last_id):
             if document["size"] > 50000000:
                 add_log("i" f"Document [{document['type']}] skipped because it > 50 MB")
                 return
-            if document_type == "image" or document_type == "gif":
-                pass
-            elif document_type == "text_document" or document_type == "ebook":
+            else:
                 response = requests.get(document["url"])
 
                 with open(f"./temp/{document['title']}", "wb") as file:
@@ -434,11 +432,8 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
     def send_docs():
         def send_doc(document):
             try:
-                if document["type"] == "image" or document["type"] == "gif":
-                    bot.send_document(config.tg_channel, document)
-                elif document["type"] == "text_document" or document["type"] == "ebook":
-                    with open(f"./temp/{document['title']}", "rb") as file:
-                        bot.send_document(config.tg_channel, file)
+                with open(f"./temp/{document['title']}", "rb") as file:
+                    bot.send_document(config.tg_channel, file)
 
                 add_log("i", f"[id:{postid}] Document [{document['type']}] sent")
             except Exception as ex:
