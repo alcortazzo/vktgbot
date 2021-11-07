@@ -30,11 +30,8 @@
 | YT/VK videos of posts | **Yes** |      *Bot will attach video links to posts.*      |
 |    Polls of posts     | **No**  |
 |  VK reposts of posts  | **Yes** |
-|       Documents       |  **~**  | The list of document types to post is shown below |
+|       Documents       | **Yes** |
 
-|    Implemented doc types to post    | Not implemented doc types to post |
-| :---------------------------------: | :-------------------------------: |
-| Text documents, Gif, Images, Ebooks | Archives, Audio, Video, *Uknown*  |
 ### In addition, the bot can skip advertising posts if in `config.py`
 ```python
 skip_ads_posts = True
