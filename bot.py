@@ -1,5 +1,5 @@
 # Made by @alcortazzo
-# v2.5
+# v2.6
 
 import os
 import re
@@ -347,16 +347,21 @@ def send_posts(postid, text_of_post, photo_url_list, docs_list):
                 if len(text_of_post) < 4096:
                     bot.send_message(config.tg_channel, text_of_post, parse_mode="HTML")
                 else:
-                    bot.send_message(
-                        config.tg_channel,
-                        f"{text_of_post[:4090]} (...)",
-                        parse_mode="HTML",
+                    text_parts = split_large_text(text_of_post, 4084)
+                    prepared_text_parts = [
+                        "(...) " + part + " (...)" for part in text_parts[1:-1]
+                    ]
+                    prepared_text_parts = (
+                        [text_parts[0] + " (...)"]
+                        + prepared_text_parts
+                        + ["(...) " + text_parts[-1]]
                     )
-                    bot.send_message(
-                        config.tg_channel,
-                        f"(...) {text_of_post[4090:]}",
-                        parse_mode="HTML",
-                    )
+
+                    for part in prepared_text_parts:
+                        bot.send_message(
+                            config.tg_channel, part, parse_mode="HTML"
+                        )
+                        time.sleep(0.5)
                 add_log("i", f"[id:{postid}] Text post sent")
             else:
                 add_log("i", f"[id:{postid}] Text post skipped because it is empty")
@@ -558,6 +563,13 @@ def ready_for_html(text):
         .replace(">", "&gt;")
         .replace('"', "&quot;")
     )
+
+
+def split_large_text(input_text: str, fragment_size: int) -> list:
+    text_fragments = []
+    for frament in range(0, len(input_text), fragment_size):
+        text_fragments.append(input_text[frament : frament + fragment_size])
+    return text_fragments
 
 
 def check_admin_status(specific_bot, specific_channel):
