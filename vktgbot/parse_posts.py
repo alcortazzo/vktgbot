@@ -1,4 +1,5 @@
 import re
+from typing import Union
 
 import requests
 from loguru import logger
@@ -15,10 +16,10 @@ def parse_post(
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
 
-    urls = []
-    videos = []
-    photos = []
-    docs = []
+    urls: list = []
+    videos: list = []
+    photos: list = []
+    docs: list = []
 
     if "attachments" in item:
         parse_attachments(item["attachments"], text, urls, videos, photos, docs)
@@ -39,13 +40,16 @@ def parse_attachments(attachments, text, urls, videos, photos, docs):
             if video:
                 videos.append(video)
         elif attachment["type"] == "photo":
-            photos.append(get_photo(attachment))
+            photo = get_photo(attachment)
+            if photo:
+                photos.append()
         elif attachment["type"] == "doc":
             doc = get_doc(attachment["doc"])
-            docs.append(doc if doc else None)
+            if doc:
+                docs.append(doc)
 
 
-def get_url(attachment: dict, text: str) -> str:
+def get_url(attachment: dict, text: str) -> Union[str, None]:
     url = attachment["link"]["url"]
     return url if url not in text else None
 
@@ -59,7 +63,7 @@ def get_video(attachment: dict) -> str:
     return video if video else f"https://vk.com/video{owner_id}_{id}"
 
 
-def get_photo(attachment: dict) -> str:
+def get_photo(attachment: dict) -> Union[str, None]:
     sizes = attachment["photo"]["sizes"]
     types = ["w", "z", "y", "x", "r", "q", "p", "o", "m", "s"]
 
@@ -76,13 +80,17 @@ def get_photo(attachment: dict) -> str:
                     False,
                 )["url"],
             )
+    else:
+        return None
 
 
-def get_doc(doc: dict) -> dict:
+def get_doc(doc: dict) -> Union[dict, None]:
     if doc["size"] > 50000000:
-        # TODO: log message about skipping this doc
-        # TODO: catch a potential error when the bot tries to get a file that has not been uploaded here
-        return {}
+        logger.info(
+            "The document was skipped due to its size exceeding the "
+            f"50MB limit: {doc['size']=}."
+        )
+        return None
     else:
         response = requests.get(doc["url"])
 

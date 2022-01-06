@@ -1,10 +1,12 @@
+from typing import Union
+
 import requests
 from loguru import logger
 
 
 def get_data_from_vk(
     vk_token: str, req_version: float, vk_domain: str, req_filter: str, req_count: int
-) -> dict:
+) -> Union[dict, None]:
     logger.info("Trying to get posts from VK.")
     response = requests.get(
         "https://api.vk.com/method/wall.get",
@@ -24,7 +26,7 @@ def get_data_from_vk(
             "Error was detected when requesting data from VK: "
             f"{data['error']['error_msg']}"
         )
-        return {}
+    return None
 
 
 def get_video_url(
@@ -50,7 +52,7 @@ def get_video_url(
             "Error was detected when requesting data from VK: "
             f"{data['error']['error_msg']}"
         )
-        return ""
+    return ""
 
 
 def get_group_name(vk_token: str, req_version: float, owner_id) -> str:
@@ -70,4 +72,4 @@ def get_group_name(vk_token: str, req_version: float, owner_id) -> str:
             "Error was detected when requesting data from VK: "
             f"{data['error']['error_msg']}"
         )
-        return ""
+    return ""

@@ -1,32 +1,29 @@
-import time
 import asyncio
 
 import requests
 from loguru import logger
-from aiogram import Bot, Dispatcher, types
-from aiogram.utils import executor, exceptions
+from aiogram import Bot, types
+from aiogram.utils import exceptions
 
 from tools import split_text
-from config import TG_BOT_TOKEN
-
-bot = Bot(token=TG_BOT_TOKEN)
-dp = Dispatcher(bot)
 
 
-def send_post(tg_channel: str, text: str, photos: list, docs: list) -> None:
+async def send_post(
+    bot: Bot, tg_channel: str, text: str, photos: list, docs: list
+) -> None:
     try:
         if len(photos) == 0:
-            executor.start(dp, send_text_post(bot, tg_channel, text))
+            await send_text_post(bot, tg_channel, text)
         elif len(photos) == 1:
-            executor.start(dp, send_photo_post(bot, tg_channel, text, photos))
+            await send_photo_post(bot, tg_channel, text, photos)
         elif len(photos) >= 2:
-            executor.start(dp, send_photos_post(bot, tg_channel, text, photos))
+            await send_photos_post(bot, tg_channel, text, photos)
         if docs:
-            executor.start(dp, send_docs_post(bot, tg_channel, docs))
+            await send_docs_post(bot, tg_channel, docs)
     except exceptions.RetryAfter as ex:
         logger.warning(f"Flood limit is exceeded. Sleep {ex.timeout} seconds.")
-        time.sleep(ex.timeout)
-        send_post(tg_channel, text, photos, docs)
+        await asyncio.sleep(ex.timeout)
+        await send_post(bot, tg_channel, text, photos, docs)
 
 
 async def send_text_post(bot: Bot, tg_channel: str, text: str) -> None:
