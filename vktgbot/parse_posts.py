@@ -42,7 +42,7 @@ def parse_attachments(attachments, text, urls, videos, photos, docs):
         elif attachment["type"] == "photo":
             photo = get_photo(attachment)
             if photo:
-                photos.append()
+                photos.append(photo)
         elif attachment["type"] == "doc":
             doc = get_doc(attachment["doc"])
             if doc:
