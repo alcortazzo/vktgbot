@@ -59,7 +59,7 @@ def start_script():
                 group_name = get_group_name(
                     config.VK_TOKEN,
                     config.REQ_VERSION,
-                    item["copy_history"][0]["owner_id"],
+                    abs(item_parts["repost"]["owner_id"]),
                 )
                 logger.info("Detected repost in the post.")
 
