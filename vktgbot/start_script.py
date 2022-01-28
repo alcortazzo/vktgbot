@@ -54,7 +54,7 @@ def start_script():
 
             item_parts = {"post": item}
             group_name = ""
-            if "copy_history" in item:
+            if "copy_history" in item and not config.SKIP_REPOSTS:
                 item_parts["repost"] = item["copy_history"][0]
                 group_name = get_group_name(
                     config.VK_TOKEN,
