@@ -67,7 +67,7 @@ async def send_photo_post(bot: Bot, tg_channel: str, text: str, photos: list) ->
 async def send_photos_post(bot: Bot, tg_channel: str, text: str, photos: list) -> None:
     media = types.MediaGroup()
     for photo in photos:
-        media.attach_photo(types.InputMediaPhoto(requests.get(photo).content))
+        media.attach_photo(types.InputMediaPhoto(photo))
 
     if (len(text) > 0) and (len(text) <= 1024):
         media.media[0].caption = text
