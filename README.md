@@ -69,5 +69,5 @@ $ cd docker
 $ docker-compose up --build
 ```
 ## License
-GPLv3
+GPLv3<br/>
 Original Creator - [alcortazzo](https://github.com/alcortazzo)
