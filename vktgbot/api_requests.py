@@ -46,7 +46,7 @@ def get_video_url(
     )
     data = response.json()
     if "response" in data:
-        return data["response"]["items"][0]["files"]["external"]
+        return data["response"]["items"][0]["files"].get("external", "")
     elif "error" in data:
         logger.error(
             "Error was detected when requesting data from VK: "
