@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  app:
+    build: ../
+    volumes:
+      - ../logs:/code/logs
+      - ../last_id.txt:/code/last_id.txt
