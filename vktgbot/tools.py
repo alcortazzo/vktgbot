@@ -74,7 +74,7 @@ def add_urls_to_text(text: str, urls: list, videos: list) -> str:
     for url in urls:
         if url not in text:
             if first_link:
-                text = f'<a href="{url}"> </a>{text}\n' if text else url
+                text = f'<a href="{url}"> </a>{text}\n\n{url}' if text else url
                 first_link = False
             else:
                 text += f"\n{url}"
