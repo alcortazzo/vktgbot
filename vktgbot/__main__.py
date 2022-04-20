@@ -24,10 +24,16 @@ logger.add(
 
 logger.info("Script is started.")
 
+
+@logger.catch
+def main():
+    start_script()
+    prepare_temp_folder()
+
+
 while True:
     try:
-        start_script()
-        prepare_temp_folder()
+        main()
         if SINGLE_START:
             logger.info("Script has successfully completed its execution")
             exit()

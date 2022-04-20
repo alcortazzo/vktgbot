@@ -24,6 +24,10 @@ async def send_post(
         logger.warning(f"Flood limit is exceeded. Sleep {ex.timeout} seconds.")
         await asyncio.sleep(ex.timeout)
         await send_post(bot, tg_channel, text, photos, docs)
+    except exceptions.BadRequest as ex:
+        logger.warning(f"Bad request. Wait 60 seconds. {ex}")
+        await asyncio.sleep(60)
+        await send_post(bot, tg_channel, text, photos, docs)
 
 
 async def send_text_post(bot: Bot, tg_channel: str, text: str) -> None:
