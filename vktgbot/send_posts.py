@@ -8,9 +8,11 @@ from aiogram.utils import exceptions
 from tools import split_text
 
 
-async def send_post(
-    bot: Bot, tg_channel: str, text: str, photos: list, docs: list
-) -> None:
+async def send_post(bot: Bot, tg_channel: str, text: str, photos: list, docs: list, num_tries: int = 0) -> None:
+    num_tries += 1
+    if num_tries > 3:
+        logger.error("Post was not sent to Telegram. Too many tries.")
+        return
     try:
         if len(photos) == 0:
             await send_text_post(bot, tg_channel, text)
@@ -21,13 +23,13 @@ async def send_post(
         if docs:
             await send_docs_post(bot, tg_channel, docs)
     except exceptions.RetryAfter as ex:
-        logger.warning(f"Flood limit is exceeded. Sleep {ex.timeout} seconds.")
+        logger.warning(f"Flood limit is exceeded. Sleep {ex.timeout} seconds. Try: {num_tries}")
         await asyncio.sleep(ex.timeout)
-        await send_post(bot, tg_channel, text, photos, docs)
+        await send_post(bot, tg_channel, text, photos, docs, num_tries)
     except exceptions.BadRequest as ex:
-        logger.warning(f"Bad request. Wait 60 seconds. {ex}")
+        logger.warning(f"Bad request. Wait 60 seconds. Try: {num_tries}. {ex}")
         await asyncio.sleep(60)
-        await send_post(bot, tg_channel, text, photos, docs)
+        await send_post(bot, tg_channel, text, photos, docs, num_tries)
 
 
 async def send_text_post(bot: Bot, tg_channel: str, text: str) -> None:
