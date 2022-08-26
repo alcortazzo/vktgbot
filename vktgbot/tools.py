@@ -1,4 +1,5 @@
 import os
+import re
 
 from loguru import logger
 
@@ -86,3 +87,17 @@ def split_text(text: str, fragment_size: int) -> list:
     for fragment in range(0, len(text), fragment_size):
         fragments.append(text[fragment : fragment + fragment_size])
     return fragments
+
+
+def reformat_vk_links(text: str) -> str:
+    match = re.search("\[(.+?)\|(.+?)\]", text)
+    while match:
+        left_text = text[: match.span()[0]]
+        right_text = text[match.span()[1] :]
+        matching_text = text[match.span()[0] : match.span()[1]]
+
+        link_domain, link_text = re.findall("\[(.+?)\|(.+?)\]", matching_text)[0]
+        text = left_text + f"""<a href="{f'https://vk.com/{link_domain}'}">{link_text}</a>""" + right_text
+        match = re.search("\[(.+?)\|(.+?)\]", text)
+
+    return text

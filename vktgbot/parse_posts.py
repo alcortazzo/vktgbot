@@ -4,7 +4,7 @@ from typing import Union
 import requests
 from loguru import logger
 
-from tools import prepare_text_for_html, prepare_text_for_reposts, add_urls_to_text
+from tools import prepare_text_for_html, prepare_text_for_reposts, add_urls_to_text, reformat_vk_links
 from api_requests import get_video_url
 from config import VK_TOKEN, REQ_VERSION
 
@@ -15,6 +15,7 @@ def parse_post(
     text = prepare_text_for_html(item["text"])
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
+        text = reformat_vk_links(text)
 
     urls: list = []
     videos: list = []
