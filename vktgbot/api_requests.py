@@ -41,7 +41,7 @@ def get_video_url(
         params={
             "access_token": vk_token,
             "v": req_version,
-            "videos": f"{owner_id}_{video_id}_{access_key}",
+            "videos": f"{owner_id}_{video_id}{'' if not access_key else f'_{access_key}'}",
         },
     )
     data = response.json()

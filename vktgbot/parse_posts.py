@@ -57,10 +57,16 @@ def get_url(attachment: dict, text: str) -> Union[str, None]:
 def get_video(attachment: dict) -> str:
     owner_id = attachment["video"]["owner_id"]
     video_id = attachment["video"]["id"]
-    access_key = attachment["video"]["access_key"]
+    video_type = attachment["video"]["type"]
+    access_key = attachment["video"].get("access_key", "")
 
     video = get_video_url(VK_TOKEN, REQ_VERSION, owner_id, video_id, access_key)
-    return video if video else f"https://vk.com/video{owner_id}_{video_id}"
+    if video:
+        return video
+    elif video_type == "short_video":
+        return f"https://vk.com/clip{owner_id}_{video_id}"
+    else:
+        return f"https://vk.com/video{owner_id}_{video_id}"
 
 
 def get_photo(attachment: dict) -> Union[str, None]:
