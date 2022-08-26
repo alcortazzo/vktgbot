@@ -1,9 +1,8 @@
 import asyncio
 
-import requests
-from loguru import logger
 from aiogram import Bot, types
 from aiogram.utils import exceptions
+from loguru import logger
 
 from tools import split_text
 
@@ -54,16 +53,12 @@ async def send_text_post(bot: Bot, tg_channel: str, text: str) -> None:
 
 async def send_photo_post(bot: Bot, tg_channel: str, text: str, photos: list) -> None:
     if len(text) <= 1024:
-        await bot.send_photo(
-            tg_channel, photos[0], text, parse_mode=types.ParseMode.HTML
-        )
+        await bot.send_photo(tg_channel, photos[0], text, parse_mode=types.ParseMode.HTML)
         logger.info("Text post (<=1024) with photo sent to Telegram.")
     else:
         prepared_text = f'<a href="{photos[0]}"> </a>{text}'
         if len(prepared_text) <= 4096:
-            await bot.send_message(
-                tg_channel, prepared_text, parse_mode=types.ParseMode.HTML
-            )
+            await bot.send_message(tg_channel, prepared_text, parse_mode=types.ParseMode.HTML)
         else:
             await send_text_post(bot, tg_channel, text)
             await bot.send_photo(tg_channel, photos[0])
@@ -87,8 +82,6 @@ async def send_photos_post(bot: Bot, tg_channel: str, text: str, photos: list) -
 async def send_docs_post(bot: Bot, tg_channel: str, docs: list) -> None:
     media = types.MediaGroup()
     for doc in docs:
-        media.attach_document(
-            types.InputMediaDocument(open(f"./temp/{doc['title']}", "rb"))
-        )
+        media.attach_document(types.InputMediaDocument(open(f"./temp/{doc['title']}", "rb")))
     await bot.send_media_group(tg_channel, media)
     logger.info("Documents sent to Telegram.")

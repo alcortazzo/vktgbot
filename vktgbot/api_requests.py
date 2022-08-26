@@ -22,20 +22,11 @@ def get_data_from_vk(
     if "response" in data:
         return data["response"]["items"]
     elif "error" in data:
-        logger.error(
-            "Error was detected when requesting data from VK: "
-            f"{data['error']['error_msg']}"
-        )
+        logger.error("Error was detected when requesting data from VK: " f"{data['error']['error_msg']}")
     return None
 
 
-def get_video_url(
-    vk_token: str,
-    req_version: float,
-    owner_id: str,
-    video_id: str,
-    access_key: str,
-) -> str:
+def get_video_url(vk_token: str, req_version: float, owner_id: str, video_id: str, access_key: str) -> str:
     response = requests.get(
         "https://api.vk.com/method/video.get",
         params={
@@ -48,10 +39,7 @@ def get_video_url(
     if "response" in data:
         return data["response"]["items"][0]["files"].get("external", "")
     elif "error" in data:
-        logger.error(
-            "Error was detected when requesting data from VK: "
-            f"{data['error']['error_msg']}"
-        )
+        logger.error(f"Error was detected when requesting data from VK: {data['error']['error_msg']}")
     return ""
 
 
@@ -68,8 +56,5 @@ def get_group_name(vk_token: str, req_version: float, owner_id) -> str:
     if "response" in data:
         return data["response"][0]["name"]
     elif "error" in data:
-        logger.error(
-            "Error was detected when requesting data from VK: "
-            f"{data['error']['error_msg']}"
-        )
+        logger.error(f"Error was detected when requesting data from VK: {data['error']['error_msg']}")
     return ""

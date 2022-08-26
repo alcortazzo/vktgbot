@@ -4,14 +4,12 @@ from typing import Union
 import requests
 from loguru import logger
 
-from tools import prepare_text_for_html, prepare_text_for_reposts, add_urls_to_text, reformat_vk_links
 from api_requests import get_video_url
-from config import VK_TOKEN, REQ_VERSION
+from config import REQ_VERSION, VK_TOKEN
+from tools import add_urls_to_text, prepare_text_for_html, prepare_text_for_reposts, reformat_vk_links
 
 
-def parse_post(
-    item: dict, repost_exists: bool, item_type: str, group_name: str
-) -> dict:
+def parse_post(item: dict, repost_exists: bool, item_type: str, group_name: str) -> dict:
     text = prepare_text_for_html(item["text"])
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
@@ -93,10 +91,7 @@ def get_photo(attachment: dict) -> Union[str, None]:
 
 def get_doc(doc: dict) -> Union[dict, None]:
     if doc["size"] > 50000000:
-        logger.info(
-            "The document was skipped due to its size exceeding the "
-            f"50MB limit: {doc['size']=}."
-        )
+        logger.info(f"The document was skipped due to its size exceeding the 50MB limit: {doc['size']=}.")
         return None
     else:
         response = requests.get(doc["url"])
