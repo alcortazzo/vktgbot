@@ -36,17 +36,12 @@ def get_video_url(
     video_id: str,
     access_key: str,
 ) -> str:
-    if access_key == "":
-        video_parameter = f"{owner_id}_{video_id}"
-    else:
-        video_parameter = f"{owner_id}_{video_id}_{access_key}"
-
     response = requests.get(
         "https://api.vk.com/method/video.get",
         params={
             "access_token": vk_token,
             "v": req_version,
-            "videos": video_parameter,
+            "videos": f"{owner_id}_{video_id}{'' if not access_key else f'_{access_key}'}",
         },
     )
     data = response.json()
