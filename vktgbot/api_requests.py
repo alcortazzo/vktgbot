@@ -1,5 +1,6 @@
 from typing import Union
 
+import re
 import requests
 from loguru import logger
 
@@ -8,15 +9,24 @@ def get_data_from_vk(
     vk_token: str, req_version: float, vk_domain: str, req_filter: str, req_count: int
 ) -> Union[dict, None]:
     logger.info("Trying to get posts from VK.")
+
+    match = re.search("(club|public)(\d+)", vk_domain)
+    if match:
+        source_param = {"owner_id": "-" + match.groups()[1]}
+    else:
+        source_param = {"domain": vk_domain}
+
     response = requests.get(
         "https://api.vk.com/method/wall.get",
-        params={
-            "access_token": vk_token,
-            "v": req_version,
-            "domain": vk_domain,
-            "filter": req_filter,
-            "count": req_count,
-        },
+        params=dict(
+            {
+                "access_token": vk_token,
+                "v": req_version,
+                "filter": req_filter,
+                "count": req_count,
+            },
+            **source_param,
+        ),
     )
     data = response.json()
     if "response" in data:
