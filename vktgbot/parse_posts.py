@@ -13,7 +13,8 @@ def parse_post(item: dict, repost_exists: bool, item_type: str, group_name: str)
     text = prepare_text_for_html(item["text"])
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
-        text = reformat_vk_links(text)
+
+    text = reformat_vk_links(text)
 
     urls: list = []
     videos: list = []
