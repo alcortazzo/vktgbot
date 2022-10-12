@@ -10,7 +10,7 @@ def get_data_from_vk(
 ) -> Union[dict, None]:
     logger.info("Trying to get posts from VK.")
 
-    match = re.search("(club|public)(\d+)", vk_domain)
+    match = re.search("^(club|public)(\d+)$", vk_domain)
     if match:
         source_param = {"owner_id": "-" + match.groups()[1]}
     else:
