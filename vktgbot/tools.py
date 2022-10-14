@@ -1,4 +1,5 @@
 import os
+import re
 
 from loguru import logger
 
@@ -8,10 +9,7 @@ def blacklist_check(blacklist: list, text: str) -> bool:
         text_lower = text.lower()
         for black_word in blacklist:
             if black_word.lower() in text_lower:
-                logger.info(
-                    "Post was skipped due to the detection of "
-                    f"blacklisted word: {black_word}."
-                )
+                logger.info(f"Post was skipped due to the detection of blacklisted word: {black_word}.")
                 return True
 
     return False
@@ -38,9 +36,7 @@ def prepare_temp_folder():
         os.mkdir("temp")
 
 
-def prepare_text_for_reposts(
-    text: str, item: dict, item_type: str, group_name: str
-) -> str:
+def prepare_text_for_reposts(text: str, item: dict, item_type: str, group_name: str) -> str:
     if item_type == "post" and text:
         from_id = item["copy_history"][0]["from_id"]
         id = item["copy_history"][0]["id"]
@@ -56,12 +52,7 @@ def prepare_text_for_reposts(
 
 
 def prepare_text_for_html(text: str) -> str:
-    return (
-        text.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
 
 
 def add_urls_to_text(text: str, urls: list, videos: list) -> str:
@@ -86,3 +77,17 @@ def split_text(text: str, fragment_size: int) -> list:
     for fragment in range(0, len(text), fragment_size):
         fragments.append(text[fragment : fragment + fragment_size])
     return fragments
+
+
+def reformat_vk_links(text: str) -> str:
+    match = re.search("\[(.+?)\|(.+?)\]", text)
+    while match:
+        left_text = text[: match.span()[0]]
+        right_text = text[match.span()[1] :]
+        matching_text = text[match.span()[0] : match.span()[1]]
+
+        link_domain, link_text = re.findall("\[(.+?)\|(.+?)\]", matching_text)[0]
+        text = left_text + f"""<a href="{f'https://vk.com/{link_domain}'}">{link_text}</a>""" + right_text
+        match = re.search("\[(.+?)\|(.+?)\]", text)
+
+    return text

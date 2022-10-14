@@ -4,17 +4,17 @@ from typing import Union
 import requests
 from loguru import logger
 
-from tools import prepare_text_for_html, prepare_text_for_reposts, add_urls_to_text
 from api_requests import get_video_url
-from config import VK_TOKEN, REQ_VERSION
+from config import REQ_VERSION, VK_TOKEN
+from tools import add_urls_to_text, prepare_text_for_html, prepare_text_for_reposts, reformat_vk_links
 
 
-def parse_post(
-    item: dict, repost_exists: bool, item_type: str, group_name: str
-) -> dict:
+def parse_post(item: dict, repost_exists: bool, item_type: str, group_name: str) -> dict:
     text = prepare_text_for_html(item["text"])
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
+
+    text = reformat_vk_links(text)
 
     urls: list = []
     videos: list = []
@@ -57,10 +57,16 @@ def get_url(attachment: dict, text: str) -> Union[str, None]:
 def get_video(attachment: dict) -> str:
     owner_id = attachment["video"]["owner_id"]
     video_id = attachment["video"]["id"]
-    access_key = attachment["video"]["access_key"]
+    video_type = attachment["video"]["type"]
+    access_key = attachment["video"].get("access_key", "")
 
     video = get_video_url(VK_TOKEN, REQ_VERSION, owner_id, video_id, access_key)
-    return video if video else f"https://vk.com/video{owner_id}_{video_id}"
+    if video:
+        return video
+    elif video_type == "short_video":
+        return f"https://vk.com/clip{owner_id}_{video_id}"
+    else:
+        return f"https://vk.com/video{owner_id}_{video_id}"
 
 
 def get_photo(attachment: dict) -> Union[str, None]:
@@ -86,10 +92,7 @@ def get_photo(attachment: dict) -> Union[str, None]:
 
 def get_doc(doc: dict) -> Union[dict, None]:
     if doc["size"] > 50000000:
-        logger.info(
-            "The document was skipped due to its size exceeding the "
-            f"50MB limit: {doc['size']=}."
-        )
+        logger.info(f"The document was skipped due to its size exceeding the 50MB limit: {doc['size']=}.")
         return None
     else:
         response = requests.get(doc["url"])
