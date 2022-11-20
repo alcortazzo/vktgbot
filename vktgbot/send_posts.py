@@ -10,6 +10,17 @@ from tools import split_text
 async def send_post(
     bot: Bot, tg_channel: str, text: str, photos: list, docs: list, config_name: str, num_tries: int = 0
 ) -> None:
+    """Send post to Telegram channel.
+
+    Args:
+        bot (Bot): Bot instance.
+        tg_channel (str): Unique identifier for the target chat or username of the target channel.
+        text (str): Post text.
+        photos (list): List of photos.
+        docs (list): List of documents.
+        config_name (str): Name of config.
+        num_tries (int, optional): Number of tries to send post. Defaults to 0.
+    """
     num_tries += 1
     if num_tries > 3:
         logger.error(f"{config_name} - Post was not sent to Telegram. Too many tries.")
@@ -34,6 +45,7 @@ async def send_post(
 
 
 async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str) -> None:
+    """Send text post to Telegram channel."""
     if not text:
         return
 
@@ -54,6 +66,7 @@ async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str)
 
 
 async def send_photo_post(bot: Bot, tg_channel: str, text: str, photos: list, config_name: str) -> None:
+    """Send post with one photo to Telegram channel."""
     if len(text) <= 1024:
         await bot.send_photo(tg_channel, photos[0], text, parse_mode=types.ParseMode.HTML)
         logger.info(f"{config_name} - Text post (<=1024) with photo sent to Telegram.")
@@ -68,6 +81,7 @@ async def send_photo_post(bot: Bot, tg_channel: str, text: str, photos: list, co
 
 
 async def send_photos_post(bot: Bot, tg_channel: str, text: str, photos: list, config_name: str) -> None:
+    """Send post with multiple photos to Telegram channel."""
     media = types.MediaGroup()
     for photo in photos:
         media.attach_photo(types.InputMediaPhoto(photo))
@@ -82,6 +96,7 @@ async def send_photos_post(bot: Bot, tg_channel: str, text: str, photos: list, c
 
 
 async def send_docs_post(bot: Bot, tg_channel: str, docs: list, config_name: str) -> None:
+    """Send documents to Telegram channel."""
     media = types.MediaGroup()
     for doc in docs:
         media.attach_document(types.InputMediaDocument(open(f"./temp/{config_name}/{doc['title']}", "rb")))

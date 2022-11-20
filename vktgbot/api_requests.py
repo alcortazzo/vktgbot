@@ -7,6 +7,15 @@ from config import ConfigParameters
 
 
 async def get_data_from_vk(config: ConfigParameters, config_name: str) -> list[dict]:
+    """Returns a list of posts from the community wall using the VK API.
+
+    Args:
+        config (ConfigParameters): Config parameters in the current section.
+        config_name (str): Name of the section in the config.
+
+    Returns:
+        list[dict]: List of posts from the community wall.
+    """
     logger.info(f"{config_name} - Trying to get posts from VK.")
 
     match = re.search("^(club|public)(\d+)$", config.vk_domain)
@@ -41,6 +50,18 @@ async def get_data_from_vk(config: ConfigParameters, config_name: str) -> list[d
 async def get_video_url(
     config: ConfigParameters, owner_id: str, video_id: str, access_key: str, config_name: str
 ) -> str:
+    """Returns a link to the video using the VK API.
+
+    Args:
+        config (ConfigParameters): Config parameters in the current section.
+        owner_id (str): Owner ID of the video.
+        video_id (str): ID of the video.
+        access_key (str): Access key for getting the video.
+        config_name (str): Name of the section in the config.
+
+    Returns:
+        str: Link to the video.
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(
             "https://api.vk.com/method/video.get",
@@ -59,6 +80,16 @@ async def get_video_url(
 
 
 async def get_group_name(config: ConfigParameters, owner_id, config_name: str) -> str:
+    """Returns the name of the group using the VK API.
+
+    Args:
+        config (ConfigParameters): Config parameters in the current section.
+        owner_id (_type_): Community ID.
+        config_name (str): Name of the section in the config.
+
+    Returns:
+        str: Name of the group.
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(
             "https://api.vk.com/method/groups.getById",
@@ -77,6 +108,14 @@ async def get_group_name(config: ConfigParameters, owner_id, config_name: str) -
 
 
 async def get_document_data(document_url: str) -> bytes:
+    """Returns the document.
+
+    Args:
+        document_url (str): Link to the document.
+
+    Returns:
+        bytes: Document.
+    """
     async with aiohttp.ClientSession() as session:
         async with session.get(document_url) as response:
             return await response.content.read()

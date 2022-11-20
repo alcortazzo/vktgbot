@@ -29,6 +29,10 @@ logger.info("Script is started.")
 
 @logger.catch(reraise=True)
 async def main():
+    """
+    Main function that creates tasks of start_script
+    function for each section in config.
+    """
     try:
         config = Config()
         prepare_folder("temp")
