@@ -1,10 +1,11 @@
 import os
 import re
+import shutil
 
 from loguru import logger
 
 
-def blacklist_check(blacklist: list, text: str) -> bool:
+def blacklist_check(blacklist: list | None, text: str) -> bool:
     if blacklist:
         text_lower = text.lower()
         for black_word in blacklist:
@@ -15,7 +16,7 @@ def blacklist_check(blacklist: list, text: str) -> bool:
     return False
 
 
-def whitelist_check(whitelist: list, text: str) -> bool:
+def whitelist_check(whitelist: list | None, text: str) -> bool:
     if whitelist:
         text_lower = text.lower()
         for white_word in whitelist:
@@ -27,13 +28,11 @@ def whitelist_check(whitelist: list, text: str) -> bool:
     return False
 
 
-def prepare_temp_folder():
-    if "temp" in os.listdir():
-        for root, dirs, files in os.walk("temp"):
-            for file in files:
-                os.remove(os.path.join(root, file))
-    else:
-        os.mkdir("temp")
+def prepare_folder(subfolder_name: str, root_folder: str | None = None):
+    path = f"./{root_folder}/{subfolder_name}" if root_folder else f"./{subfolder_name}"
+    if subfolder_name in os.listdir(root_folder):
+        shutil.rmtree(path)
+    os.mkdir(path)
 
 
 def prepare_text_for_reposts(text: str, item: dict, item_type: str, group_name: str) -> str:

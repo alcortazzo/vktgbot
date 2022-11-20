@@ -1,15 +1,16 @@
 import re
 from typing import Union
 
-import requests
 from loguru import logger
 
-from api_requests import get_video_url
-from config import REQ_VERSION, VK_TOKEN
+from api_requests import get_video_url, get_document_data
+from config import ConfigParameters
 from tools import add_urls_to_text, prepare_text_for_html, prepare_text_for_reposts, reformat_vk_links
 
 
-def parse_post(item: dict, repost_exists: bool, item_type: str, group_name: str) -> dict:
+async def parse_post(
+    item: dict, repost_exists: bool, item_type: str, group_name: str, config: ConfigParameters, config_name: str
+) -> dict:
     text = prepare_text_for_html(item["text"])
     if repost_exists:
         text = prepare_text_for_reposts(text, item, item_type, group_name)
@@ -22,21 +23,23 @@ def parse_post(item: dict, repost_exists: bool, item_type: str, group_name: str)
     docs: list = []
 
     if "attachments" in item:
-        parse_attachments(item["attachments"], text, urls, videos, photos, docs)
+        await parse_attachments(item["attachments"], text, urls, videos, photos, docs, config, config_name)
 
     text = add_urls_to_text(text, urls, videos)
-    logger.info(f"{item_type.capitalize()} parsing is complete.")
+    logger.info(f"{config_name} - {item_type.capitalize()} parsing is complete.")
     return {"text": text, "photos": photos, "docs": docs}
 
 
-def parse_attachments(attachments, text, urls, videos, photos, docs):
+async def parse_attachments(
+    attachments, text, urls, videos, photos, docs, config: ConfigParameters, config_name: str
+) -> None:
     for attachment in attachments:
         if attachment["type"] == "link":
             url = get_url(attachment, text)
             if url:
                 urls.append(url)
         elif attachment["type"] == "video":
-            video = get_video(attachment)
+            video = await get_video(attachment, config, config_name)
             if video:
                 videos.append(video)
         elif attachment["type"] == "photo":
@@ -44,7 +47,7 @@ def parse_attachments(attachments, text, urls, videos, photos, docs):
             if photo:
                 photos.append(photo)
         elif attachment["type"] == "doc":
-            doc = get_doc(attachment["doc"])
+            doc = await get_doc(attachment["doc"], config_name)
             if doc:
                 docs.append(doc)
 
@@ -54,13 +57,13 @@ def get_url(attachment: dict, text: str) -> Union[str, None]:
     return url if url not in text else None
 
 
-def get_video(attachment: dict) -> str:
+async def get_video(attachment: dict, config: ConfigParameters, config_name: str) -> str:
     owner_id = attachment["video"]["owner_id"]
     video_id = attachment["video"]["id"]
     video_type = attachment["video"]["type"]
     access_key = attachment["video"].get("access_key", "")
 
-    video = get_video_url(VK_TOKEN, REQ_VERSION, owner_id, video_id, access_key)
+    video = await get_video_url(config, owner_id, video_id, access_key, config_name)
     if video:
         return video
     elif video_type == "short_video":
@@ -90,14 +93,14 @@ def get_photo(attachment: dict) -> Union[str, None]:
         return None
 
 
-def get_doc(doc: dict) -> Union[dict, None]:
+async def get_doc(doc: dict, config_name: str) -> Union[dict, None]:
     if doc["size"] > 50000000:
-        logger.info(f"The document was skipped due to its size exceeding the 50MB limit: {doc['size']=}.")
+        logger.info(
+            f"{config_name} - The document was skipped due to its size exceeding the 50MB limit: {doc['size']=}."
+        )
         return None
     else:
-        response = requests.get(doc["url"])
-
-        with open(f'./temp/{doc["title"]}', "wb") as file:
-            file.write(response.content)
+        with open(f'./temp/{config_name}/{doc["title"]}', "wb") as file:
+            file.write(await get_document_data(doc["url"]))
 
     return {"title": doc["title"], "url": doc["url"]}

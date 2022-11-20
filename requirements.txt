@@ -1,4 +1,5 @@
 aiogram
-requests
+aiohttp
 loguru
-python-dotenv
+pydantic
+ruamel.yaml

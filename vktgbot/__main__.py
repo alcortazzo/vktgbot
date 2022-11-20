@@ -2,17 +2,19 @@
 Telegram Bot for automated reposting from VKontakte community pages
 to Telegram channels.
 
-v3.1
+v4.0
 by @alcortazzo
 """
 
-import time
+import asyncio
+from asyncio import Task
 
 from loguru import logger
 
-from config import SINGLE_START, TIME_TO_SLEEP
+from config import Config
 from start_script import start_script
-from tools import prepare_temp_folder
+from tools import prepare_folder
+
 
 logger.add(
     "./logs/debug.log",
@@ -25,21 +27,35 @@ logger.add(
 logger.info("Script is started.")
 
 
-@logger.catch
-def main():
-    start_script()
-    prepare_temp_folder()
-
-
-while True:
+@logger.catch(reraise=True)
+async def main():
     try:
-        main()
-        if SINGLE_START:
-            logger.info("Script has successfully completed its execution")
-            exit()
-        else:
-            logger.info(f"Script went to sleep for {TIME_TO_SLEEP} seconds.")
-            time.sleep(TIME_TO_SLEEP)
+        config = Config()
+        prepare_folder("temp")
+        async_tasks: dict[str, Task] = {}
+
+        for config_name in config.config.keys():
+            logger.info(f"Bot '{config_name}' is started.")
+            async_task = asyncio.create_task(start_script(config_name))
+            async_tasks[config_name] = async_task
+
+        while True:
+            await asyncio.sleep(1)
+            if not len(async_tasks):
+                break
+            async_tasks_to_remove: list[str] = []
+
+            for config_name, async_task in async_tasks.items():
+                if async_task.done():
+                    async_task.result()
+                    logger.info(f"Bot '{config_name}' is stopped.")
+                    async_tasks_to_remove.append(config_name)
+
+            for config_name in async_tasks_to_remove:
+                async_tasks.pop(config_name)
     except KeyboardInterrupt:
-        logger.info("Script is stopped by the user.")
-        exit()
+        logger.info("Script is stopped by user.")
+    logger.info("Script is stopped.")
+
+
+asyncio.run(main())

@@ -1,25 +1,65 @@
-import json
 import os
 
-import dotenv
+from loguru import logger
+from pydantic import BaseModel, ValidationError
+from ruamel.yaml import YAML
 
-dotenv.load_dotenv()
+
+class ConfigParameters(BaseModel):
+    tg_channel: str
+    tg_bot_token: str
+    vk_token: str
+    vk_domain: str
+
+    req_version: float
+    req_count: int
+    req_filter: str
+
+    single_start: bool
+    time_to_sleep: int | float
+    skip_ads_posts: bool
+    skip_copyrighted_posts: bool
+    skip_reposts: bool
+
+    whitelist: list | None
+    blacklist: list | None
+
+    last_kwown_post_id: int
 
 
-TG_CHANNEL: str = os.getenv("VAR_TG_CHANNEL", "")
-TG_BOT_TOKEN: str = os.getenv("VAR_TG_BOT_TOKEN", "")
-VK_TOKEN: str = os.getenv("VAR_VK_TOKEN", "")
-VK_DOMAIN: str = os.getenv("VAR_VK_DOMAIN", "")
+class Config:
+    def __init__(self) -> None:
+        self.check_if_config_exists()
+        self.yaml = YAML()
+        self.config: dict[str, ConfigParameters] = self.load_config()
 
-REQ_VERSION: float = float(os.getenv("VAR_REQ_VERSION", 5.103))
-REQ_COUNT: int = int(os.getenv("VAR_REQ_COUNT", 3))
-REQ_FILTER: str = os.getenv("VAR_REQ_FILTER", "owner")
+    def check_if_config_exists(self) -> None:
+        if not os.path.exists("config.yaml"):
+            raise FileNotFoundError("config.yaml not found")
 
-SINGLE_START: bool = os.getenv("VAR_SINGLE_START", "").lower() in ("true",)
-TIME_TO_SLEEP: int = int(os.getenv("VAR_TIME_TO_SLEEP", 120))
-SKIP_ADS_POSTS: bool = os.getenv("VAR_SKIP_ADS_POSTS", "").lower() in ("true",)
-SKIP_COPYRIGHTED_POST: bool = os.getenv("VAR_SKIP_COPYRIGHTED_POST", "").lower() in ("true")
-SKIP_REPOSTS: bool = os.getenv("VAR_SKIP_REPOSTS", "").lower() in ("true")
+    def load_config(self) -> dict[str, ConfigParameters]:
+        config_to_return: dict[str, ConfigParameters] = {}
 
-WHITELIST: list = json.loads(os.getenv("VAR_WHITELIST", "[]"))
-BLACKLIST: list = json.loads(os.getenv("VAR_BLACKLIST", "[]"))
+        with open("config.yaml") as file:
+            config: dict[str, dict] = self.yaml.load(file)
+
+        for key, value in config.items():
+            if isinstance(value, dict):
+                if "tg_channel" in value and isinstance(value["tg_channel"], int):
+                    value["tg_channel"] = str(value["tg_channel"])
+            try:
+                config_to_return[key] = ConfigParameters(**value)
+            except ValidationError as exception:
+                logger.error(f"Config for {key} is invalid")
+                raise exception
+
+        return config_to_return
+
+    def update_last_known_id(self, config_name: str, last_known_id: int) -> None:
+        with open("config.yaml") as file:
+            config: dict[str, dict] = self.yaml.load(file)
+
+        config[config_name]["last_kwown_post_id"] = last_known_id
+
+        with open("config.yaml", "w") as file:
+            self.yaml.dump(config, file)

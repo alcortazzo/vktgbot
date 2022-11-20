@@ -5,4 +5,4 @@ services:
     build: ../
     volumes:
       - ../logs:/code/logs
-      - ../last_id.txt:/code/last_id.txt
+      - ../config.yaml:/code/config.yaml
