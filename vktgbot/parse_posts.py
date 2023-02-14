@@ -66,7 +66,7 @@ async def parse_attachments(
             if url:
                 urls.append(url)
         elif attachment["type"] == "video":
-            video = await get_video(attachment, config)
+            video = await get_video(attachment, config, config_name)
             if video:
                 videos.append(video)
         elif attachment["type"] == "photo":
@@ -84,12 +84,13 @@ def get_url(attachment: dict, text: str) -> Union[str, None]:
     return url if url not in text else None
 
 
-async def get_video(attachment: dict, config: ConfigParameters) -> str:
+async def get_video(attachment: dict, config: ConfigParameters, config_name: str) -> str:
     """Get video URL.
 
     Args:
         attachment (dict): Video attachment.
         config (ConfigParameters): Config parameters.
+        config_name (str): Name of section in config.
 
     Returns:
         str: Video URL.
