@@ -7,9 +7,7 @@ from loguru import logger
 from tools import split_text
 
 
-async def send_post(
-    bot: Bot, tg_channel: str, text: str, photos: list, docs: list, config_name: str, num_tries: int = 0
-) -> None:
+async def send_post(bot: Bot, tg_channel: str, text: str, photos: list, docs: list, config_name: str) -> None:
     """Send post to Telegram channel.
 
     Args:
@@ -19,29 +17,30 @@ async def send_post(
         photos (list): List of photos.
         docs (list): List of documents.
         config_name (str): Name of config.
-        num_tries (int, optional): Number of tries to send post. Defaults to 0.
     """
-    num_tries += 1
-    if num_tries > 3:
-        logger.error(f"{config_name} - Post was not sent to Telegram. Too many tries.")
-        return
-    try:
-        if len(photos) == 0:
-            await send_text_post(bot, tg_channel, text, config_name)
-        elif len(photos) == 1:
-            await send_photo_post(bot, tg_channel, text, photos, config_name)
-        elif len(photos) >= 2:
-            await send_photos_post(bot, tg_channel, text, photos, config_name)
-        if docs:
-            await send_docs_post(bot, tg_channel, docs, config_name)
-    except exceptions.RetryAfter as ex:
-        logger.warning(f"{config_name} - Flood limit is exceeded. Sleep {ex.timeout} seconds. Try: {num_tries}")
-        await asyncio.sleep(ex.timeout)
-        await send_post(bot, tg_channel, text, photos, docs, config_name, num_tries)
-    except exceptions.BadRequest as ex:
-        logger.warning(f"{config_name} - Bad request. Wait 60 seconds. Try: {num_tries}. {ex}")
-        await asyncio.sleep(60)
-        await send_post(bot, tg_channel, text, photos, docs, config_name, num_tries)
+    num_tries = 1
+    while num_tries <= 5:
+        num_tries += 1
+        try:
+            if len(photos) == 0:
+                await send_text_post(bot, tg_channel, text, config_name)
+            elif len(photos) == 1:
+                await send_photo_post(bot, tg_channel, text, photos, config_name)
+            elif len(photos) >= 2:
+                await send_photos_post(bot, tg_channel, text, photos, config_name)
+            if docs:
+                await send_docs_post(bot, tg_channel, docs, config_name)
+            break
+        except exceptions.RetryAfter as ex:
+            logger.warning(
+                f"{config_name} - Flood limit is exceeded. Sleep {ex.timeout + 10} seconds. Try: {num_tries - 1}."
+            )
+            await asyncio.sleep(ex.timeout + 10)
+        except exceptions.BadRequest as ex:
+            logger.warning(f"{config_name} - Bad request. Wait 60 seconds. Try: {num_tries}. {ex}")
+            await asyncio.sleep(60)
+        if num_tries > 5:
+            logger.error(f"{config_name} - Post was not sent to Telegram. Too many tries.")
 
 
 async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str) -> None:
