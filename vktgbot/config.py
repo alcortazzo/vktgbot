@@ -13,7 +13,6 @@ class ConfigParameters(BaseModel):
     vk_token: str
     vk_domain: str
 
-    req_version: float
     req_count: int
     req_filter: str
 

@@ -21,10 +21,6 @@ section_name:
   # vk_domain: "example"
   vk_domain: "bbbb"
 
-  # Version of VK API (https://vk.com/dev/versions).
-  # Used for "wall.get" method
-  req_version: 5.103
-  
   # Number of posts to send to Telegram.
   # Min value = 2
   # Max value = 100
@@ -82,7 +78,6 @@ section_name:
 #   vk_token: "00a0a0ab00f0a0ab00f0a6ab0c00000b0f000f000f0a0ab0a00b000000dd00000000de0"
 #   vk_domain: "bbbb"
 
-#   req_version: 5.103
 #   req_count: 5
 #   req_filter: owner
 

@@ -19,8 +19,9 @@ async def start_script(config_name: str):
 
         items: list[dict] = await get_data_from_vk(config, config_name)
         if not items:
+            logger.info(f"{config_name} - No posts were found. Sleeping for {config.time_to_sleep} seconds.")
             await asyncio.sleep(config.time_to_sleep)
-            break
+            continue
 
         if "is_pinned" in items[0]:
             items = items[1:]

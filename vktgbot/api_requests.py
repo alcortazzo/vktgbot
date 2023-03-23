@@ -30,7 +30,7 @@ async def get_data_from_vk(config: ConfigParameters, config_name: str) -> list[d
             params=dict(
                 {
                     "access_token": config.vk_token,
-                    "v": config.req_version,
+                    "v": 5.103,
                     "filter": config.req_filter,
                     "count": config.req_count,
                 },
@@ -67,7 +67,7 @@ async def get_video_url(
             "https://api.vk.com/method/video.get",
             params={
                 "access_token": config.vk_token,
-                "v": config.req_version,
+                "v": 5.103,
                 "videos": f"{owner_id}_{video_id}{'' if not access_key else f'_{access_key}'}",
             },
         ) as response:
@@ -95,7 +95,7 @@ async def get_group_name(config: ConfigParameters, owner_id, config_name: str) -
             "https://api.vk.com/method/groups.getById",
             params={
                 "access_token": config.vk_token,
-                "v": config.req_version,
+                "v": 5.103,
                 "group_id": owner_id,
             },
         ) as response:
