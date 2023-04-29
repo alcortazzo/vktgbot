@@ -21,6 +21,7 @@ logger.add(
     format="{time} {level} {message}",
     level="DEBUG",
     rotation="1 week",
+    retention="1 month",
     compression="zip",
 )
 
@@ -38,11 +39,14 @@ async def main():
         prepare_folder("temp")
         async_tasks: dict[str, Task] = {}
 
+        # Create tasks for each section in config
         for config_name in config.config.keys():
             logger.info(f"Bot '{config_name}' is started.")
             async_task = asyncio.create_task(start_script(config_name))
             async_tasks[config_name] = async_task
 
+        # Wait for tasks to finish and remove them from the list.
+        # Some tasks will never finish because they are infinite loops.
         while True:
             await asyncio.sleep(1)
             if not len(async_tasks):
