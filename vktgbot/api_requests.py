@@ -72,7 +72,7 @@ async def get_video_url(
             },
         ) as response:
             data = await response.json()
-    if "response" in data:
+    if "response" in data and data["response"]["items"]:
         return data["response"]["items"][0]["files"].get("external", "")
     elif "error" in data:
         logger.error(f"{config_name} - Error was detected when requesting data from VK: {data['error']['error_msg']}")
