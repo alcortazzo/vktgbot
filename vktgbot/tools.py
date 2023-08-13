@@ -142,7 +142,7 @@ def split_text(text: str, fragment_size: int) -> list:
 
 def reformat_vk_links(text: str) -> str:
     """Reformats VK links to Telegram links."""
-    match = re.search("\[(.+?)\|(.+?)\]", text)
+    match = re.search("\[([\w.]+?)\|(.+?)\]", text)
     while match:
         left_text = text[: match.span()[0]]
         right_text = text[match.span()[1] :]
@@ -150,6 +150,6 @@ def reformat_vk_links(text: str) -> str:
 
         link_domain, link_text = re.findall("\[(.+?)\|(.+?)\]", matching_text)[0]
         text = left_text + f"""<a href="{f'https://vk.com/{link_domain}'}">{link_text}</a>""" + right_text
-        match = re.search("\[(.+?)\|(.+?)\]", text)
+        match = re.search("\[([\w.]+?)\|(.+?)\]", text)
 
     return text
