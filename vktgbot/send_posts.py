@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
-from aiogram.types import InputMediaDocument, InputMediaPhoto
+from aiogram.types import FSInputFile, InputMediaDocument, InputMediaPhoto
 from loguru import logger
 
 from vktgbot.tools import split_text
@@ -99,6 +99,7 @@ async def send_docs_post(bot: Bot, tg_channel: str, docs: list, config_name: str
     """Send documents to Telegram channel."""
     media = []
     for doc in docs:
-        media.append(InputMediaDocument(media=open(f"./temp/{config_name}/{doc['title']}", "rb")))
+        input_file: FSInputFile = FSInputFile(path=f"./temp/{config_name}/{doc['title']}", filename=doc["title"])
+        media.append(InputMediaDocument(media=input_file))
     await bot.send_media_group(chat_id=tg_channel, media=media)
     logger.info(f"{config_name} - Documents sent to Telegram.")
