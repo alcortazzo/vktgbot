@@ -1,10 +1,12 @@
 import asyncio
 
-from aiogram import Bot, types
-from aiogram.utils import exceptions
+from aiogram import Bot
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
+from aiogram.types import InputMediaDocument, InputMediaPhoto
 from loguru import logger
 
-from tools import split_text
+from vktgbot.tools import split_text
 
 
 async def send_post(bot: Bot, tg_channel: str, text: str, photos: list, docs: list, config_name: str) -> None:
@@ -31,12 +33,12 @@ async def send_post(bot: Bot, tg_channel: str, text: str, photos: list, docs: li
             if docs:
                 await send_docs_post(bot, tg_channel, docs, config_name)
             break
-        except exceptions.RetryAfter as ex:
+        except TelegramRetryAfter as ex:
             logger.warning(
-                f"{config_name} - Flood limit is exceeded. Sleep {ex.timeout + 10} seconds. Try: {num_tries - 1}."
+                f"{config_name} - Flood limit is exceeded. Sleep {ex.retry_after + 10} seconds. Try: {num_tries - 1}."
             )
-            await asyncio.sleep(ex.timeout + 10)
-        except exceptions.BadRequest as ex:
+            await asyncio.sleep(ex.retry_after + 10)
+        except TelegramBadRequest as ex:
             logger.warning(f"{config_name} - Bad request. Wait 60 seconds. Try: {num_tries}. {ex}")
             await asyncio.sleep(60)
         if num_tries > 5:
@@ -49,7 +51,7 @@ async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str)
         return
 
     if len(text) < 4096:
-        await bot.send_message(tg_channel, text, parse_mode=types.ParseMode.HTML)
+        await bot.send_message(chat_id=tg_channel, text=text, parse_mode=ParseMode.HTML)
     else:
         text_parts = split_text(text, 4084)
         prepared_text_parts = (
@@ -59,7 +61,7 @@ async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str)
         )
 
         for part in prepared_text_parts:
-            await bot.send_message(tg_channel, part, parse_mode=types.ParseMode.HTML)
+            await bot.send_message(chat_id=tg_channel, text=part, parse_mode=ParseMode.HTML)
             await asyncio.sleep(0.5)
     logger.info(f"{config_name} - Text post sent to Telegram.")
 
@@ -67,37 +69,36 @@ async def send_text_post(bot: Bot, tg_channel: str, text: str, config_name: str)
 async def send_photo_post(bot: Bot, tg_channel: str, text: str, photos: list, config_name: str) -> None:
     """Send post with one photo to Telegram channel."""
     if len(text) <= 1024:
-        await bot.send_photo(tg_channel, photos[0], text, parse_mode=types.ParseMode.HTML)
+        await bot.send_photo(chat_id=tg_channel, photo=photos[0], caption=text, parse_mode=ParseMode.HTML)
         logger.info(f"{config_name} - Text post (<=1024) with photo sent to Telegram.")
     else:
         prepared_text = f'<a href="{photos[0]}"> </a>{text}'
         if len(prepared_text) <= 4096:
-            await bot.send_message(tg_channel, prepared_text, parse_mode=types.ParseMode.HTML)
+            await bot.send_message(chat_id=tg_channel, text=prepared_text, parse_mode=ParseMode.HTML)
         else:
             await send_text_post(bot, tg_channel, text, config_name)
-            await bot.send_photo(tg_channel, photos[0])
+            await bot.send_photo(chat_id=tg_channel, photo=photos[0])
         logger.info(f"{config_name} - Text post (>1024) with photo sent to Telegram.")
 
 
 async def send_photos_post(bot: Bot, tg_channel: str, text: str, photos: list, config_name: str) -> None:
     """Send post with multiple photos to Telegram channel."""
-    media = types.MediaGroup()
+    media = []
     for photo in photos:
-        media.attach_photo(types.InputMediaPhoto(photo))
+        media.append(InputMediaPhoto(media=photo, parse_mode=ParseMode.HTML))
 
     if (len(text) > 0) and (len(text) <= 1024):
-        media.media[0].caption = text
-        media.media[0].parse_mode = types.ParseMode.HTML
+        media[0].caption = text
     elif len(text) > 1024:
         await send_text_post(bot, tg_channel, text, config_name)
-    await bot.send_media_group(tg_channel, media)
+    await bot.send_media_group(chat_id=tg_channel, media=media)
     logger.info(f"{config_name} - Text post with photos sent to Telegram.")
 
 
 async def send_docs_post(bot: Bot, tg_channel: str, docs: list, config_name: str) -> None:
     """Send documents to Telegram channel."""
-    media = types.MediaGroup()
+    media = []
     for doc in docs:
-        media.attach_document(types.InputMediaDocument(open(f"./temp/{config_name}/{doc['title']}", "rb")))
-    await bot.send_media_group(tg_channel, media)
+        media.append(InputMediaDocument(media=open(f"./temp/{config_name}/{doc['title']}", "rb")))
+    await bot.send_media_group(chat_id=tg_channel, media=media)
     logger.info(f"{config_name} - Documents sent to Telegram.")

@@ -1,82 +1,129 @@
 import asyncio
+from typing import Literal
 
 from aiogram import Bot
 from loguru import logger
 
-from api_requests import get_data_from_vk, get_group_name
-from config import Config, ConfigParameters
-from parse_posts import parse_post
-from send_posts import send_post
-from tools import blacklist_check, prepare_folder, whitelist_check
+from vktgbot import api_requests, tools
+from vktgbot.config import Config, ConfigParameters
+from vktgbot.parse_posts import parse_post
+from vktgbot.send_posts import send_post
 
 
-async def start_script(config_name: str):
-    while True:
-        prepare_folder(config_name, "temp")
-        config_cls = Config()
-        config: ConfigParameters = config_cls.config[config_name]
-        logger.info(f"{config_name} - Last known ID: {config.last_kwown_post_id}")
+class BotInstance:
+    def __init__(self, config_name: str) -> None:
+        self.config_name: str = config_name
 
-        items: list[dict] = await get_data_from_vk(config, config_name)
-        if not items:
-            logger.info(f"{config_name} - No posts were found. Sleeping for {config.time_to_sleep} seconds.")
-            await asyncio.sleep(config.time_to_sleep)
-            continue
+        self.config: Config
+        self.config_parameters: ConfigParameters
+        self.bot: Bot
 
-        if "is_pinned" in items[0]:
-            items = items[1:]
-        logger.info(f"{config_name} - Got a few posts with IDs: {items[-1]['id']} - {items[0]['id']}.")
+    async def __aenter__(self) -> "BotInstance":
+        self.__refresh_config()
+        await self.__init_bot()
 
-        new_last_id: int = items[0]["id"]
+        logger.info("Bot instance for {self.config_name} was initialized.")
 
-        if new_last_id > config.last_kwown_post_id:
-            bot = Bot(token=config.tg_bot_token)
+        return self
 
-            for item in items[::-1]:
-                if item["id"] <= config.last_kwown_post_id:
-                    continue
-                logger.info(f"{config_name} - Working with post with ID: {item['id']}.")
-                if blacklist_check(config.blacklist, item["text"]):
-                    continue
-                if whitelist_check(config.whitelist, item["text"]):
-                    continue
-                if config.skip_ads_posts and item["marked_as_ads"]:
-                    logger.info(f"{config_name} - Post was skipped as an advertisement.")
-                    continue
-                if config.skip_copyrighted_posts and "copyright" in item:
-                    logger.info(f"{config_name} - Post was skipped as an copyrighted post.")
-                    continue
+    async def __aexit__(self, *args) -> None:
+        await self.__close_bot_session()
+        logger.info("Bot instance was closed.")
 
-                item_parts = {"post": item}
-                group_name = ""
-                if "copy_history" in item and not config.skip_reposts:
-                    item_parts["repost"] = item["copy_history"][0]
-                    group_name = await get_group_name(config, abs(item_parts["repost"]["owner_id"]), config_name)
-                    logger.info(f"{config_name} - Detected repost in the post.")
+    def __refresh_config(self) -> None:
+        """Updates config and config_parameters attributes."""
+        self.config = Config()
+        self.config_parameters = self.config.config[self.config_name]
 
-                for item_part in item_parts:
-                    prepare_folder(config_name, "temp")
-                    repost_exists: bool = True if len(item_parts) > 1 else False
+    async def __init_bot(self) -> None:
+        self.bot = Bot(token=self.config_parameters.tg_bot_token)
+        logger.debug(f"{self.config_name} - Bot was initialized.")
 
-                    logger.info(f"{config_name} - Starting parsing of the {item_part}")
-                    parsed_post = await parse_post(
-                        item_parts[item_part], repost_exists, item_part, group_name, config, config_name
-                    )
-                    logger.info(f"{config_name} - Starting sending of the {item_part}")
-                    await send_post(
-                        bot,
-                        config.tg_channel,
-                        parsed_post["text"],
-                        parsed_post["photos"],
-                        parsed_post["docs"],
-                        config_name,
-                    )
-            await bot.close()
+    async def __close_bot_session(self) -> None:
+        await self.bot.session.close()
+        logger.debug(f"{self.config_name} - Bot session was closed.")
 
-        config_cls.update_last_known_id(config_name, new_last_id)
-        logger.info(f"{config_name} - Last known ID was updated to {new_last_id}.")
-        if not config.single_start:
-            logger.info(f"{config_name} - Sleeping for {config.time_to_sleep} seconds.")
-            await asyncio.sleep(config.time_to_sleep)
-        else:
-            break
+    async def start(self) -> None:
+        while True:
+            self.__refresh_config()
+
+            logger.info(f"{self.config_name} - Last known ID: {self.config_parameters.last_kwown_post_id}")
+
+            posts: list[dict] = await api_requests.get_data_from_vk(self.config_parameters, self.config_name)
+            if not posts:
+                await self.__close_bot_session()
+                logger.info(
+                    f"{self.config_name} - No posts were found. Sleeping for {self.config_parameters.time_to_sleep} seconds."
+                )
+                await asyncio.sleep(self.config_parameters.time_to_sleep)
+                continue
+
+            if "is_pinned" in posts[0]:
+                posts = posts[1:]
+            logger.info(f"{self.config_name} - Got a few posts with IDs: {posts[-1]['id']} - {posts[0]['id']}.")
+
+            new_last_id: int = posts[0]["id"]
+
+            if new_last_id > self.config_parameters.last_kwown_post_id:
+                for post in posts[::-1]:
+                    if post["id"] <= self.config_parameters.last_kwown_post_id:
+                        continue
+                    logger.info(f"{self.config_name} - Working with post with ID: {post['id']}.")
+                    if tools.blacklist_check(self.config_parameters.blacklist, post["text"]):
+                        continue
+                    if tools.whitelist_check(self.config_parameters.whitelist, post["text"]):
+                        continue
+                    if self.config_parameters.skip_ads_posts and post["marked_as_ads"]:
+                        logger.info(f"{self.config_name} - Post was skipped as an advertisement.")
+                        continue
+                    if self.config_parameters.skip_copyrighted_posts and "copyright" in post:
+                        logger.info(f"{self.config_name} - Post was skipped as an copyrighted post.")
+                        continue
+
+                    post_parts: dict[Literal["post", "repost"], dict] = {"post": post}
+                    group_name: str = ""
+                    repost_exists: bool = False
+                    if "copy_history" in post and not self.config_parameters.skip_reposts:
+                        repost_exists = True
+                        post_parts["repost"] = post["copy_history"][0]
+                        group_name = await api_requests.get_group_name(
+                            self.config_parameters, abs(post_parts["repost"]["owner_id"]), self.config_name
+                        )
+                        logger.info(f"{self.config_name} - Detected repost in the post.")
+
+                    for post_type, post_item in post_parts.items():
+                        tools.prepare_folder(self.config_name, "temp")
+
+                        logger.info(f"{self.config_name} - Starting parsing of the {post_type}")
+                        parsed_post = await parse_post(
+                            post=post_item,
+                            repost_exists=repost_exists,
+                            post_type=post_type,
+                            group_name=group_name,
+                            config_parameters=self.config_parameters,
+                            config_name=self.config_name,
+                        )
+                        logger.info(f"{self.config_name} - Starting sending of the {post_type}")
+                        await send_post(
+                            self.bot,
+                            self.config_parameters.tg_channel,
+                            parsed_post["text"],
+                            parsed_post["photos"],
+                            parsed_post["docs"],
+                            self.config_name,
+                        )
+
+            await self.__close_bot_session()
+
+            self.config.update_last_known_id(self.config_name, new_last_id)
+            logger.info(f"{self.config_name} - Last known ID was updated to {new_last_id}.")
+            if not self.config_parameters.single_start:
+                logger.info(f"{self.config_name} - Sleeping for {self.config_parameters.time_to_sleep} seconds.")
+                await asyncio.sleep(self.config_parameters.time_to_sleep)
+            else:
+                break
+
+
+async def start_bot_instance(config_name: str):
+    async with BotInstance(config_name=config_name) as bot_instance:
+        await bot_instance.start()

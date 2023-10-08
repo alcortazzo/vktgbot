@@ -3,45 +3,49 @@ from typing import Union
 
 from loguru import logger
 
-from api_requests import get_video_url, get_document_data
-from config import ConfigParameters
-from tools import add_urls_to_text, prepare_text_for_html, prepare_text_for_reposts, reformat_vk_links
+from vktgbot import api_requests, tools
+from vktgbot.config import ConfigParameters
 
 
 async def parse_post(
-    item: dict, repost_exists: bool, item_type: str, group_name: str, config: ConfigParameters, config_name: str
+    post: dict,
+    repost_exists: bool,
+    post_type: str,
+    group_name: str,
+    config_parameters: ConfigParameters,
+    config_name: str,
 ) -> dict:
     """
     Parse post text and attachments, prepare them for posting
     to Telegram and return a dict with all the data.
 
     Args:
-        item (dict): Post data from VK API.
+        post (dict): Post data from VK API.
         repost_exists (bool): True if post contains a repost.
-        item_type (str): Type of post: "post" or "repost".
+        post_type (str): Type of post: "post" or "repost".
         group_name (str): Name of group.
-        config (ConfigParameters): Config parameters.
+        config_parameters (ConfigParameters): Config parameters.
         config_name (str): Name of section in config.
 
     Returns:
         dict: Dict with prepared text and attachments.
     """
-    text = prepare_text_for_html(item["text"])
+    text = tools.prepare_text_for_html(post["text"])
     if repost_exists:
-        text = prepare_text_for_reposts(text, item, item_type, group_name)
+        text = tools.prepare_text_for_reposts(text, post, post_type, group_name)
 
-    text = reformat_vk_links(text)
+    text = tools.reformat_vk_links(text)
 
     urls: list = []
     videos: list = []
     photos: list = []
     docs: list = []
 
-    if "attachments" in item:
-        await parse_attachments(item["attachments"], text, urls, videos, photos, docs, config, config_name)
+    if "attachments" in post:
+        await parse_attachments(post["attachments"], text, urls, videos, photos, docs, config_parameters, config_name)
 
-    text = add_urls_to_text(text, urls, videos)
-    logger.info(f"{config_name} - {item_type.capitalize()} parsing is complete.")
+    text = tools.add_urls_to_text(text, urls, videos)
+    logger.info(f"{config_name} - {post_type.capitalize()} parsing is complete.")
     return {"text": text, "photos": photos, "docs": docs}
 
 
@@ -100,7 +104,7 @@ async def get_video(attachment: dict, config: ConfigParameters, config_name: str
     video_type = attachment["video"]["type"]
     access_key = attachment["video"].get("access_key", "")
 
-    video = await get_video_url(config, owner_id, video_id, access_key, config_name)
+    video = await api_requests.get_video_url(config, owner_id, video_id, access_key, config_name)
     if video:
         return video
     elif video_type == "short_video":
@@ -155,6 +159,6 @@ async def get_doc(doc: dict, config_name: str) -> Union[dict, None]:
         return None
     else:
         with open(f'./temp/{config_name}/{doc["title"]}', "wb") as file:
-            file.write(await get_document_data(doc["url"]))
+            file.write(await api_requests.get_document_data(doc["url"]))
 
     return {"title": doc["title"], "url": doc["url"]}

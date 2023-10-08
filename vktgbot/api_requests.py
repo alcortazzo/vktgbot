@@ -3,7 +3,7 @@ import re
 import aiohttp
 from loguru import logger
 
-from config import ConfigParameters
+from vktgbot.config import ConfigParameters
 
 
 async def get_data_from_vk(config: ConfigParameters, config_name: str) -> list[dict]:

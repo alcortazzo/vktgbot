@@ -30,11 +30,11 @@ class ConfigParameters(BaseModel):
 
 class Config:
     def __init__(self) -> None:
-        self.check_if_config_exists()
+        self.__check_if_config_exists()
         self.yaml = YAML()
-        self.config: dict[str, ConfigParameters] = self.load_config()
+        self.config: dict[str, ConfigParameters] = self.__load_config()
 
-    def check_if_config_exists(self) -> None:
+    def __check_if_config_exists(self) -> None:
         """Checks if config.yaml exists in the root directory.
 
         Raises:
@@ -43,7 +43,7 @@ class Config:
         if not os.path.exists("config.yaml"):
             raise FileNotFoundError("config.yaml not found")
 
-    def load_config(self) -> dict[str, ConfigParameters]:
+    def __load_config(self) -> dict[str, ConfigParameters]:
         """Loads config.yaml, validates it and returns a dict with ConfigParameters objects.
 
         Raises:
